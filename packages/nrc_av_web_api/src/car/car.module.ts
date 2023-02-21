@@ -1,0 +1,15 @@
+import { Module } from '@nestjs/common';
+import { forwardRef } from '@nestjs/common/utils';
+import { AgentModule } from '../agent/agent.module';
+import { DatabaseModule } from '../core/database/database.module';
+import { CarController } from './car.controller';
+import { CarService } from './car.service';
+import { CarGateway } from './car.gateway';
+
+@Module({
+  imports: [DatabaseModule, forwardRef(() => AgentModule)],
+  controllers: [CarController],
+  providers: [CarService, CarGateway],
+  exports: [CarService, CarGateway],
+})
+export class CarModule {}

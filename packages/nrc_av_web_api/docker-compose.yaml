@@ -1,0 +1,52 @@
+version: '3'
+services:
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    volumes:
+      - ./config/:/mosquitto/config/:rw
+    ports:
+      - 1883:1883
+      - 9001:9001
+  postgres:
+    image: postgres:14-alpine
+    container_name: postgres
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=1234
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_DB=nissan
+    build:
+      context: .
+      dockerfile: ./devops/db/Dockerfile.db
+    # healthcheck:
+    #   test: [ 'CMD', 'pg_isready', '-U', 'root', '-d', 'nissan' ]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 5
+    #   start_period: 5s
+    # flyway:
+    #   image: flyway/flyway
+    #   container_name: flyway
+    #   command: -url=jdbc:postgresql://postgres/nissan -user=root -password=1234 -mixed="true" -connectRetries=60 migrate -baselineOnMigrate=true
+    #   volumes:
+    #     - './sql:/flyway/sql'
+    #   depends_on:
+    #     - postgres
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: sh -c "yarn install && yarn start:dev"
+    container_name: backend
+    ports:
+      - 3000:3000
+    env_file:
+      - .env
+    depends_on:
+      - postgres
