@@ -7,4 +7,8 @@ export const configuration = () => ({
     password: process.env.DATABASE_PASSWORD || '1234',
     name: process.env.DATABASE_NAME || 'nissan',
   },
+  jwt: {
+    secret: process.env.JWT_SECRET || 'secret',
+    expirationTime: Number(process.env.JWT_EXPIRATION_TIME) || 3600,
+  },
 });

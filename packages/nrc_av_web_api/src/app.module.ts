@@ -5,6 +5,7 @@ import { configuration, DbModule } from './config';
 import { CarModule } from './car/car.module';
 import { SequenceModule } from './sequence/sequence.module';
 import { ScheduleModule } from '@nestjs/schedule/dist';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ScheduleModule } from '@nestjs/schedule/dist';
     DbModule,
     CarModule,
     SequenceModule,
+    AuthModule,
   ],
 })
 export class AppModule {}

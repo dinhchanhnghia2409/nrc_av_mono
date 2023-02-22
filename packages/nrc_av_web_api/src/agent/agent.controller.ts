@@ -6,14 +6,17 @@ import {
   Post,
   Res,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger/dist';
 import { Response } from 'express';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { CarService } from '../car/car.service';
+import { UserGuard } from '../core';
 
 @ApiTags('agent')
 @Controller('agent')
+@UseGuards(UserGuard)
 export class AgentController {
   constructor(
     private readonly agentService: AgentService,
