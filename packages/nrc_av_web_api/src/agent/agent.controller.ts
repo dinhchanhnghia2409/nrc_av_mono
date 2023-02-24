@@ -8,7 +8,7 @@ import {
   ParseIntPipe,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger/dist';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { CarService } from '../car/car.service';
@@ -16,6 +16,7 @@ import { UserGuard } from '../core';
 
 @ApiTags('agent')
 @Controller('agent')
+@ApiBearerAuth()
 @UseGuards(UserGuard)
 export class AgentController {
   constructor(

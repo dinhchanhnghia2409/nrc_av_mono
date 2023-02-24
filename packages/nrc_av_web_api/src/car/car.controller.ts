@@ -6,14 +6,17 @@ import {
   Put,
   Param,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
-import { Car, DatabaseService } from '../core';
+import { Car, DatabaseService, UserGuard } from '../core';
 import { CarService } from './car.service';
 
 @ApiTags('Car')
 @Controller('car')
+@ApiCookieAuth()
+@UseGuards(UserGuard)
 export class CarController {
   constructor(
     private readonly databaseService: DatabaseService,

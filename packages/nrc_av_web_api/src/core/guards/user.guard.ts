@@ -24,11 +24,10 @@ export class UserGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req: Request = context.switchToHttp().getRequest();
 
-    const authorization = req.headers['authorization'] || '';
-    const token = this.getTokenFromHeader(authorization);
-
-    const { data, error } = await this.authService.verifyToken<JwtToken>(token);
-
+    const authorization = req.cookies['access-token'] || '';
+    const { data, error } = await this.authService.verifyToken<JwtToken>(
+      authorization,
+    );
     if (error) {
       throw new HttpException({}, HttpStatus.UNAUTHORIZED);
     }
