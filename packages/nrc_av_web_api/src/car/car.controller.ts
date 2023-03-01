@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
+import { DataSource } from 'typeorm';
 import { Car, CarStatus, DatabaseService, UserGuard } from '../core';
 import { CarService } from './car.service';
 
@@ -27,13 +28,7 @@ export class CarController {
   async getActiveListCar(@Res() res: Response) {
     return res
       .status(HttpStatus.OK)
-      .send(
-        await this.databaseService.getManyByField(
-          Car,
-          'status',
-          CarStatus.ACTIVE,
-        ),
-      );
+      .send(await this.carService.getCarsByField('status', CarStatus.ACTIVE));
   }
 
   @Get('/waiting')
@@ -54,7 +49,9 @@ export class CarController {
     @Param('id', ParseIntPipe) id: number,
     @Res() res: Response,
   ) {
-    return res.status(HttpStatus.OK).send(await this.carService.getCarById(id));
+    return res
+      .status(HttpStatus.OK)
+      .send(await this.carService.getCarByField('id', id));
   }
 
   @Put('/:id/status')

@@ -28,20 +28,18 @@ export class CarService {
     car.status = CarStatus.ACTIVE;
 
     car = await this.databaseService.save(Car, car);
-    const result = await this.carGateway.emitToRoom(
-      SocketEnum.EVENT_CAR_ACTIVATION,
-      `${SocketEnum.ROOM_PREFIX}${car.certKey}`,
-      {
-        certKey: car.certKey,
-      },
-    );
-
-    if (result[0] !== car.certKey) {
-      car.status = CarStatus.WAITING;
-      await this.databaseService.save(Car, car);
+    try {
+      await this.carGateway.emitToRoom(
+        SocketEnum.EVENT_CAR_ACTIVATION,
+        `${SocketEnum.ROOM_PREFIX}${car.certKey}`,
+        {
+          certKey: car.certKey,
+        },
+      );
+    } catch (err) {
       throw new HttpException(
         message.agentError,
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.SERVICE_UNAVAILABLE,
       );
     }
 
@@ -84,9 +82,16 @@ export class CarService {
     return await this.databaseService.save<Car>(Car, car);
   }
 
-  async getCarById(id: number): Promise<Car> {
+  async getCarByField(field: keyof Car, value: any): Promise<Car> {
     return await this.dataSource.getRepository(Car).findOne({
-      where: { id: id },
+      where: { [field]: value },
+      loadEagerRelations: true,
+    });
+  }
+
+  async getCarsByField(field: keyof Car, value: any): Promise<Car[]> {
+    return await this.dataSource.getRepository(Car).find({
+      where: { [field]: value },
       loadEagerRelations: true,
     });
   }

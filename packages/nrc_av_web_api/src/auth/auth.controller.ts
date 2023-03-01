@@ -23,4 +23,13 @@ export class AuthController {
       })
       .send(accessToken);
   }
+
+  @Post('/logout')
+  async logout(@Res() res: Response) {
+    return res
+      .cookie(constant.authController.tokenName, '', {
+        maxAge: 0,
+      })
+      .send();
+  }
 }
