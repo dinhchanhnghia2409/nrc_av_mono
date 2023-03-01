@@ -1,14 +1,6 @@
-import {
-  Body,
-  Controller,
-  HttpException,
-  Post,
-  Res,
-  UsePipes,
-  HttpStatus,
-} from '@nestjs/common';
+import { Body, Controller, Post, Res, UsePipes } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { JoiValidatorPipe, DatabaseService, User, constant } from '../core';
+import { JoiValidatorPipe, constant } from '../core';
 import { LoginDTO, vLoginDTO } from './dto/loginDTO';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
@@ -16,10 +8,7 @@ import { AuthService } from './auth.service';
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private readonly databaseService: DatabaseService,
-    private readonly authService: AuthService,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   @Post('/login')
   @ApiOperation({ summary: 'Login' })
@@ -31,6 +20,7 @@ export class AuthController {
     return res
       .cookie(constant.authController.tokenName, accessToken, {
         maxAge: constant.authController.loginCookieTime,
+        httpOnly: true,
       })
       .send(accessToken);
   }

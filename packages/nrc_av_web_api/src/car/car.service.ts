@@ -1,5 +1,12 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { Car, DatabaseService, CarStatus, Model } from '../core';
+import {
+  Car,
+  DatabaseService,
+  CarStatus,
+  Model,
+  message,
+  SocketEnum,
+} from '../core';
 import { DataSource } from 'typeorm';
 import { CarGateway } from './car.gateway';
 
@@ -15,13 +22,13 @@ export class CarService {
     let car = await this.databaseService.getOneByField(Car, 'id', id);
 
     if (car.status !== CarStatus.WAITING)
-      throw new HttpException('invalid status', HttpStatus.BAD_REQUEST);
+      throw new HttpException(message.invalidStatus, HttpStatus.BAD_REQUEST);
     car.status = CarStatus.ACTIVE;
 
     car = await this.databaseService.save(Car, car);
     const result = await this.carGateway.emitToRoom(
-      `carActivation`,
-      `nissan/${car.certKey}`,
+      SocketEnum.EVENT_CAR_ACTIVATION,
+      `${SocketEnum.ROOM_PREFIX}${car.certKey}`,
       {
         certKey: car.certKey,
       },
@@ -30,7 +37,10 @@ export class CarService {
     if (result[0] !== car.certKey) {
       car.status = CarStatus.WAITING;
       await this.databaseService.save(Car, car);
-      throw new HttpException('agent error', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        message.agentError,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
 
     return car;

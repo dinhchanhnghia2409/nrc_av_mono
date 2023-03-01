@@ -34,4 +34,6 @@ export const message = Object.freeze({
   s3Error: 'S3 error',
   invalidStatus: 'Invalid status',
   duplicatedField: 'Duplicated field',
+  agentError: 'Agent error',
+  carNotFound: 'Car not found',
 });

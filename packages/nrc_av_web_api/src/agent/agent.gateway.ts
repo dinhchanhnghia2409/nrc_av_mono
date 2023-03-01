@@ -7,6 +7,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { CarService } from '../car/car.service';
+import { SocketEnum } from '../core';
 
 @WebSocketGateway({
   namespace: 'nissan',
@@ -19,7 +20,7 @@ export class AgentGateway {
   async emitToRoom(event: string, room: string, data: any) {
     return await new Promise((resolve, reject) => {
       this.server
-        .timeout(3000)
+        .timeout(SocketEnum.TIME_OUT)
         .to(room)
         .emit(event, data, (err, responses) => {
           if (err) {
@@ -42,15 +43,19 @@ export class AgentGateway {
   @SubscribeMessage('join')
   async onEvent(@ConnectedSocket() client: Socket, @MessageBody() data: any) {
     data = JSON.parse(data);
-    client.join(`nissan/${data?.certKey}`);
+    client.join(`${SocketEnum.ROOM_PREFIX}${data?.certKey}`);
     const car = await this.carService.registerCar(
       data.certKey,
       data.macAddress,
       data.licenseNumber,
     );
 
-    await this.emitToRoom(`registrationResponse`, 'nissan', {
-      certKey: car.certKey,
-    });
+    await this.emitToRoom(
+      SocketEnum.EVENT_REGISTRATION_RESPONSE,
+      `${SocketEnum.ROOM_PREFIX}${data?.certKey}`,
+      {
+        certKey: car.certKey,
+      },
+    );
   }
 }

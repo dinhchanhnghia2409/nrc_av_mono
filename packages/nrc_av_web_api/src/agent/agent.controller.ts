@@ -1,7 +1,6 @@
 import { AgentService } from './agent.service';
 import {
   Controller,
-  Get,
   Param,
   Post,
   Res,
@@ -10,8 +9,6 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
-import { MessagePattern, Payload } from '@nestjs/microservices';
-import { CarService } from '../car/car.service';
 import { UserGuard } from '../core';
 
 @ApiTags('agent')
@@ -19,10 +16,7 @@ import { UserGuard } from '../core';
 @ApiBearerAuth()
 @UseGuards(UserGuard)
 export class AgentController {
-  constructor(
-    private readonly agentService: AgentService,
-    private readonly carService: CarService,
-  ) {}
+  constructor(private readonly agentService: AgentService) {}
 
   @Post('/socket/:carId/ROS-master')
   async runROSmaster(
@@ -43,26 +37,4 @@ export class AgentController {
       await this.agentService.sendROSLaunchCommand(carId, rosNodeId),
     );
   }
-
-  @Get('/socket')
-  async getMessageBySocket(@Res() res: Response) {
-    return res.send(await this.agentService.getMessageBySocket());
-  }
-
-  @MessagePattern('carRegistration')
-  async getNotifications(@Payload() data: any) {
-    await this.carService.registerCar(
-      data.certKey,
-      data.macAddress,
-      data.licenseNumber,
-    );
-  }
-
-  @MessagePattern('carActivation')
-  async activeCar(@Payload() data: any) {
-    await this.carService.activeCar(data.certKey);
-  }
-
-  @MessagePattern('imAlive')
-  async aliveCar(@Payload() data: string) {}
 }

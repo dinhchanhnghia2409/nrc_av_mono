@@ -1,5 +1,6 @@
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server } from 'socket.io';
+import { SocketEnum } from '../core';
 
 @WebSocketGateway({
   namespace: 'nissan',
@@ -9,18 +10,17 @@ export class CarGateway {
   server: Server;
 
   async emitToRoom(event: string, room: string, data: any) {
-    const result = await new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       this.server
-        .timeout(1000)
+        .timeout(SocketEnum.TIME_OUT)
         .to(room)
         .emit(event, data, (err, responses) => {
           if (err) {
-            throw err;
+            reject(err.message);
           } else {
             resolve(responses);
           }
         });
     });
-    return result;
   }
 }

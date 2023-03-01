@@ -11,4 +11,7 @@ export const configuration = () => ({
     secret: process.env.JWT_SECRET || 'secret',
     expirationTime: Number(process.env.JWT_EXPIRATION_TIME) || 3600,
   },
+  client: {
+    clientUrl: (process.env.CLIENT_URL || 'http://localhost:3000').split(','),
+  },
 });
