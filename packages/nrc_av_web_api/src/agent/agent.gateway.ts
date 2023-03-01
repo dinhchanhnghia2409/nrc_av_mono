@@ -57,7 +57,7 @@ export class AgentGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody() data: RegisterAgentDTO,
   ) {
-    client.join(`${SocketEnum.ROOM_PREFIX}${data?.id}`);
+    client.join(`${SocketEnum.ROOM_PREFIX}${data?.certKey}`);
     const car = await this.carService.registerCar(data);
 
     await this.emitToRoom(

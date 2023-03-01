@@ -4,9 +4,6 @@ import { carValidateSchema } from 'src/core';
 
 export class RegisterAgentDTO {
   @IsString()
-  id: string;
-
-  @IsString()
   name: string;
 
   @IsString()
@@ -26,7 +23,6 @@ export class RegisterAgentDTO {
 }
 
 export const vRegisterAgentDTO = joi.object<RegisterAgentDTO>({
-  id: joi.string().required(),
   name: carValidateSchema.name.required(),
   model: joi.string().required(),
   macAddress: carValidateSchema.macAddress.required(),
