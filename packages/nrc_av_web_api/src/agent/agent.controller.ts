@@ -33,8 +33,10 @@ export class AgentController {
     @Param('rosNodeId', ParseIntPipe) rosNodeId: number,
     @Res() res: Response,
   ) {
-    return res.send(
-      await this.agentService.sendROSLaunchCommand(carId, rosNodeId),
+    const result = await this.agentService.sendROSLaunchCommand(
+      carId,
+      rosNodeId,
     );
+    return res.send(result[0]);
   }
 }
