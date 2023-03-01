@@ -1,1 +1,2 @@
-export * from './validator.pipe';
+export * from './httpValidator.pipe';
+export * from './socketValidator.pipe';

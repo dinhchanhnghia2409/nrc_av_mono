@@ -1,24 +1,22 @@
 import { Column, Entity, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
-import { CarConnectionType, CarStatus } from '../enums';
+import { CarStatus } from '../enums';
 import { Agent } from './agent';
 import { Model } from './model';
+import * as joi from 'joi';
 
 @Entity()
 export class Car {
   @PrimaryGeneratedColumn('increment')
   id: number;
 
-  @Column()
+  @Column({ nullable: true })
+  name: string;
+
+  @Column({ nullable: false })
   macAddress: string;
 
-  @Column()
-  licenseNumber: string;
-
-  @Column()
+  @Column({ nullable: false, unique: true })
   certKey: string;
-
-  @Column({ default: CarConnectionType.WIFI })
-  connectionType: string;
 
   @Column()
   lastConnected: Date;
@@ -32,3 +30,8 @@ export class Car {
   @ManyToOne(() => Agent, (agent) => agent.cars, { eager: true })
   agent: Agent;
 }
+
+export const carValidateSchema = {
+  name: joi.string().min(0).max(40).trim(),
+  macAddress: joi.string().min(0).max(40).trim(),
+};

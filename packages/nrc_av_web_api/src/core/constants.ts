@@ -36,4 +36,5 @@ export const message = Object.freeze({
   duplicatedField: 'Duplicated field',
   agentError: 'Agent error',
   carNotFound: 'Car not found',
+  modelNotFound: 'Model not found',
 });

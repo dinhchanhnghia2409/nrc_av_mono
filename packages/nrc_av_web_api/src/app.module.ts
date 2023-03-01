@@ -6,6 +6,8 @@ import { CarModule } from './car/car.module';
 import { ScheduleModule } from '@nestjs/schedule/dist';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
+import { ModelModule } from './model/model.module';
+import { InterfaceModule } from './interface/interface.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { UserModule } from './user/user.module';
     CarModule,
     AuthModule,
     UserModule,
+    ModelModule,
+    InterfaceModule,
   ],
 })
 export class AppModule {}

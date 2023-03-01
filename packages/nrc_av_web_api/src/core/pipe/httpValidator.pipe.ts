@@ -7,7 +7,7 @@ import {
 import { ObjectSchema, ValidationError } from 'joi';
 
 @Injectable()
-export class JoiValidatorPipe implements PipeTransform {
+export class HttpJoiValidatorPipe implements PipeTransform {
   constructor(private readonly schema: ObjectSchema) {}
 
   private mapJoiError(error: ValidationError) {

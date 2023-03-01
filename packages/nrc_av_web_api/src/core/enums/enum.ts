@@ -5,10 +5,6 @@ export enum CarStatus {
   REGISTERED = 'REGISTERED',
 }
 
-export enum CarConnectionType {
-  WIFI = 'WIFI',
-}
-
 export enum OSType {
   WINDOWS = 'WINDOWS',
   LINUX = 'LINUX',

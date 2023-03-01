@@ -9,6 +9,8 @@ import {
 } from '../core';
 import { DataSource } from 'typeorm';
 import { CarGateway } from './car.gateway';
+import { WsException } from '@nestjs/websockets';
+import { RegisterAgentDTO } from '../agent/dto/registerAgent.dto';
 
 @Injectable()
 export class CarService {
@@ -46,20 +48,23 @@ export class CarService {
     return car;
   }
 
-  async registerCar(
-    certKey: string,
-    macAddress: string,
-    licenseNumber: string,
-  ): Promise<Car> {
+  async registerCar(registerAgentDTO: RegisterAgentDTO): Promise<Car> {
+    const { macAddress, model: modelName, certKey, name } = registerAgentDTO;
     let car = await this.databaseService.getOneByField(Car, 'certKey', certKey);
     if (car) return car;
-    const model = await this.databaseService.getOneByField(Model, 'id', 1);
+    const model = await this.databaseService.getOneByField(
+      Model,
+      'name',
+      modelName,
+    );
+
+    if (!model) throw new WsException(message.modelNotFound);
 
     car = new Car();
     car.certKey = certKey;
     car.macAddress = macAddress;
-    car.licenseNumber = licenseNumber;
     car.model = model;
+    car.name = name;
     car.lastConnected = new Date();
 
     car = await this.databaseService.save(Car, car);
