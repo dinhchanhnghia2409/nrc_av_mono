@@ -20,7 +20,6 @@ export class AuthController {
     return res
       .cookie(constant.authController.tokenName, accessToken, {
         maxAge: constant.authController.loginCookieTime,
-        httpOnly: true,
       })
       .send(accessToken);
   }
