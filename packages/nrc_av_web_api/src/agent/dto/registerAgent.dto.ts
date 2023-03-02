@@ -1,6 +1,6 @@
 import { IsString } from 'class-validator';
 import joi from 'joi';
-import { carValidateSchema } from 'src/core';
+import { carValidateSchema } from '../../core';
 
 export class RegisterAgentDTO {
   @IsString()

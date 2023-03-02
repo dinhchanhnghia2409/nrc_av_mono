@@ -1,7 +1,7 @@
 import { Controller, Get, Req, Res, UseGuards, HttpStatus } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import { UserGuard } from 'src/core';
+import { UserGuard } from '../core';
 
 @ApiTags('user')
 @Controller('user')
