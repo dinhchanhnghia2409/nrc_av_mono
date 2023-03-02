@@ -2,7 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder } from '@nestjs/swagger';
 import { SwaggerModule } from '@nestjs/swagger/dist';
-import * as cookieParser from 'cookie-parser';
+import cookieParser from 'cookie-parser';
 
 export const router = (app: INestApplication, configService: ConfigService) => {
   app.setGlobalPrefix('api/v1');
@@ -23,6 +23,6 @@ export const router = (app: INestApplication, configService: ConfigService) => {
     preflightContinue: false,
     credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    optionsSuccessStatus: 204,
+    optionsSuccessStatus: 204
   });
 };

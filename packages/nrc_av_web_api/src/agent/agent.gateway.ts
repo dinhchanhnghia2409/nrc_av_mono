@@ -5,15 +5,15 @@ import {
   WebSocketGateway,
   WebSocketServer,
   MessageBody,
-  WsException,
+  WsException
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { CarService } from '../car/car.service';
-import { SocketEnum, SocketJoiValidatorPipe } from '../core';
-import { RegisterAgentDTO, vRegisterAgentDTO } from './dto/registerAgent.dto';
+import { SocketEnum } from '../core';
+import { RegisterAgentDTO } from './dto/registerAgent.dto';
 
 @WebSocketGateway({
-  namespace: 'nissan',
+  namespace: 'nissan'
 })
 export class AgentGateway {
   constructor(private readonly carService: CarService) {}
@@ -36,10 +36,12 @@ export class AgentGateway {
   }
 
   handleConnection(client: any) {
+    // eslint-disable-next-line no-console
     console.log('connected', client.id);
   }
 
-  handleDisconnect(client) {
+  handleDisconnect(client: { id: any }) {
+    // eslint-disable-next-line no-console
     console.log('disconnected', client.id);
   }
 
@@ -49,14 +51,11 @@ export class AgentGateway {
       transform: true,
       exceptionFactory(errors) {
         throw new WsException(errors);
-      },
-    }),
+      }
+    })
   )
   @SubscribeMessage('join')
-  async onEvent(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() data: RegisterAgentDTO,
-  ) {
+  async onEvent(@ConnectedSocket() client: Socket, @MessageBody() data: RegisterAgentDTO) {
     client.join(`${SocketEnum.ROOM_PREFIX}${data?.certKey}`);
     const car = await this.carService.registerCar(data);
 
@@ -64,8 +63,8 @@ export class AgentGateway {
       SocketEnum.EVENT_REGISTRATION_RESPONSE,
       `${SocketEnum.ROOM_PREFIX}${car?.certKey}`,
       {
-        certKey: car.certKey,
-      },
+        certKey: car.certKey
+      }
     );
   }
 }

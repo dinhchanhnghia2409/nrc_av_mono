@@ -1,7 +1,6 @@
 import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
 import { WsException } from '@nestjs/websockets';
 import { ObjectSchema, ValidationError } from 'joi';
-import { Socket } from 'socket.io';
 
 @Injectable()
 export class SocketJoiValidatorPipe implements PipeTransform {
@@ -10,7 +9,9 @@ export class SocketJoiValidatorPipe implements PipeTransform {
   private mapJoiError(error: ValidationError) {
     const errorObj = {};
 
-    for (const item of error.details) errorObj[item.context.key] = item.message;
+    for (const item of error.details) {
+      errorObj[item.context.key] = item.message;
+    }
     return errorObj;
   }
 
@@ -18,12 +19,12 @@ export class SocketJoiValidatorPipe implements PipeTransform {
     if (!metatype || !this.toValidate(metatype)) {
       return input;
     }
-    console.log(input);
 
     const { error, value } = this.schema.validate(input, { abortEarly: false });
 
-    if (error && typeof input !== 'string')
+    if (error && typeof input !== 'string') {
       throw new WsException(this.mapJoiError(error));
+    }
 
     return value;
   }

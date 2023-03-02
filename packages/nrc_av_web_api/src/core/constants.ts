@@ -5,7 +5,7 @@ export const constant = Object.freeze({
     registerCookieTime: 1000 * 60 * 60 * 24 * 30,
     googleUserCookieTime: 1000 * 60 * 60 * 24 * 30,
     facebookUserCookieTime: 1000 * 60 * 60 * 24 * 30,
-    tokenName: 'access-token',
+    tokenName: 'access-token'
   },
   default: {
     orderBy: 'createAt',
@@ -13,15 +13,15 @@ export const constant = Object.freeze({
     pageSize: 12,
     pageSizeMd: 24,
     pageSizeLg: 48,
-    hashingSalt: 8,
+    hashingSalt: 8
   },
   NS: {
     APP_INFO: 'app-info',
     APP_ERROR: 'app-error',
     APP_WARN: 'app-warn',
     HTTP: 'http-app',
-    MAIL: 'http-mail',
-  },
+    MAIL: 'http-mail'
+  }
 });
 
 export const message = Object.freeze({
@@ -36,5 +36,5 @@ export const message = Object.freeze({
   duplicatedField: 'Duplicated field',
   agentError: 'Agent error',
   carNotFound: 'Car not found',
-  modelNotFound: 'Model not found',
+  modelNotFound: 'Model not found'
 });

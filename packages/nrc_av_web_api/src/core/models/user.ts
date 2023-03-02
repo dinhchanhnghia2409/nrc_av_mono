@@ -1,5 +1,5 @@
+import joi from 'joi';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import * as joi from 'joi';
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('increment')
@@ -14,5 +14,5 @@ export class User {
 
 export const userValidateSchema = {
   username: joi.string().min(3).max(40).trim().lowercase().required(),
-  password: joi.string().min(6).max(32).trim().alphanum().required(),
+  password: joi.string().min(6).max(32).trim().alphanum().required()
 };

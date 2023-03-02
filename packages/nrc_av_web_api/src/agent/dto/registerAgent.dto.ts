@@ -1,5 +1,5 @@
 import { IsString } from 'class-validator';
-import * as joi from 'joi';
+import joi from 'joi';
 import { carValidateSchema } from 'src/core';
 
 export class RegisterAgentDTO {
@@ -28,5 +28,5 @@ export const vRegisterAgentDTO = joi.object<RegisterAgentDTO>({
   macAddress: carValidateSchema.macAddress.required(),
   defaultInterface: joi.string().required(),
   licenseNumber: joi.string().required(),
-  certKey: joi.string().required(),
+  certKey: joi.string().required()
 });

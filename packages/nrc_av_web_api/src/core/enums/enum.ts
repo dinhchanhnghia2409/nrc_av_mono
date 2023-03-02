@@ -2,18 +2,18 @@ export enum CarStatus {
   WAITING = 'WAITING',
   ACTIVE = 'ACTIVE',
   OFFLINE = 'OFFLINE',
-  REGISTERED = 'REGISTERED',
+  REGISTERED = 'REGISTERED'
 }
 
 export enum OSType {
   WINDOWS = 'WINDOWS',
   LINUX = 'LINUX',
-  MACOS = 'MACOS',
+  MACOS = 'MACOS'
 }
 
 export enum AgentStatus {
   ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE',
+  INACTIVE = 'INACTIVE'
 }
 
 export enum SocketEnum {
@@ -23,5 +23,5 @@ export enum SocketEnum {
   EVENT_RUN_ROS_NODE = 'nissan/ros/node',
   EVENT_REGISTRATION_RESPONSE = 'registrationResponse',
   EVENT_CAR_ACTIVATION = 'carActivation',
-  RUN_ROS_MASTER_COMMAND = 'python ~/projects/nrc_ws/src/nrc_av/av/kelly_interface.py',
+  RUN_ROS_MASTER_COMMAND = 'python ~/projects/nrc_ws/src/nrc_av/av/kelly_interface.py'
 }

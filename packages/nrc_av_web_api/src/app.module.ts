@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
-import { AgentModule } from './agent/agent.module';
 import { ConfigModule } from '@nestjs/config';
-import { configuration, DbModule } from './config';
-import { CarModule } from './car/car.module';
 import { ScheduleModule } from '@nestjs/schedule/dist';
+import { AgentModule } from './agent/agent.module';
 import { AuthModule } from './auth/auth.module';
-import { UserModule } from './user/user.module';
-import { ModelModule } from './model/model.module';
+import { CarModule } from './car/car.module';
+import { configuration, DbModule } from './config';
 import { InterfaceModule } from './interface/interface.module';
+import { ModelModule } from './model/model.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -15,7 +15,7 @@ import { InterfaceModule } from './interface/interface.module';
     ConfigModule.forRoot({
       envFilePath: '.env',
       load: [configuration],
-      isGlobal: true,
+      isGlobal: true
     }),
     ScheduleModule.forRoot(),
     DbModule,
@@ -23,7 +23,7 @@ import { InterfaceModule } from './interface/interface.module';
     AuthModule,
     UserModule,
     ModelModule,
-    InterfaceModule,
-  ],
+    InterfaceModule
+  ]
 })
 export class AppModule {}

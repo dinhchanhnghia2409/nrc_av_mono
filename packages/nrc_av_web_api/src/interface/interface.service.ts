@@ -1,5 +1,5 @@
-import { DataSource } from 'typeorm';
 import { Injectable } from '@nestjs/common';
+import { DataSource } from 'typeorm';
 import { Cmd } from '../core';
 
 @Injectable()
@@ -10,9 +10,9 @@ export class InterfaceService {
     return this.dataSource.getRepository(Cmd).find({
       where: {
         interfaces: {
-          id: id,
-        },
-      },
+          id
+        }
+      }
     });
   }
 }

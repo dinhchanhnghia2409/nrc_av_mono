@@ -1,30 +1,24 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import {
-  Car,
-  DatabaseService,
-  CarStatus,
-  Model,
-  message,
-  SocketEnum,
-} from '../core';
-import { DataSource } from 'typeorm';
-import { CarGateway } from './car.gateway';
 import { WsException } from '@nestjs/websockets';
+import { DataSource } from 'typeorm';
 import { RegisterAgentDTO } from '../agent/dto/registerAgent.dto';
+import { Car, DatabaseService, CarStatus, Model, message, SocketEnum } from '../core';
+import { CarGateway } from './car.gateway';
 
 @Injectable()
 export class CarService {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly dataSource: DataSource,
-    private readonly carGateway: CarGateway,
+    private readonly carGateway: CarGateway
   ) {}
 
   async updateStatus(id: number): Promise<Car> {
     let car = await this.databaseService.getOneByField(Car, 'id', id);
 
-    if (car.status !== CarStatus.WAITING)
+    if (car.status !== CarStatus.WAITING) {
       throw new HttpException(message.invalidStatus, HttpStatus.BAD_REQUEST);
+    }
     car.status = CarStatus.ACTIVE;
 
     car = await this.databaseService.save(Car, car);
@@ -33,14 +27,11 @@ export class CarService {
         SocketEnum.EVENT_CAR_ACTIVATION,
         `${SocketEnum.ROOM_PREFIX}${car.certKey}`,
         {
-          certKey: car.certKey,
-        },
+          certKey: car.certKey
+        }
       );
     } catch (err) {
-      throw new HttpException(
-        message.agentError,
-        HttpStatus.SERVICE_UNAVAILABLE,
-      );
+      throw new HttpException(message.agentError, HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     return car;
@@ -49,14 +40,14 @@ export class CarService {
   async registerCar(registerAgentDTO: RegisterAgentDTO): Promise<Car> {
     const { macAddress, model: modelName, certKey, name } = registerAgentDTO;
     let car = await this.databaseService.getOneByField(Car, 'certKey', certKey);
-    if (car) return car;
-    const model = await this.databaseService.getOneByField(
-      Model,
-      'name',
-      modelName,
-    );
+    if (car) {
+      return car;
+    }
+    const model = await this.databaseService.getOneByField(Model, 'name', modelName);
 
-    if (!model) throw new WsException(message.modelNotFound);
+    if (!model) {
+      throw new WsException(message.modelNotFound);
+    }
 
     car = new Car();
     car.certKey = certKey;
@@ -70,12 +61,10 @@ export class CarService {
   }
 
   async activeCar(certKey: string): Promise<Car> {
-    const car = await this.databaseService.getOneByField(
-      Car,
-      'certKey',
-      certKey,
-    );
-    if (!car || car.status !== CarStatus.REGISTERED) return null;
+    const car = await this.databaseService.getOneByField(Car, 'certKey', certKey);
+    if (!car || car.status !== CarStatus.REGISTERED) {
+      return null;
+    }
 
     car.status = CarStatus.ACTIVE;
     car.lastConnected = new Date();
@@ -85,14 +74,14 @@ export class CarService {
   async getCarByField(field: keyof Car, value: any): Promise<Car> {
     return await this.dataSource.getRepository(Car).findOne({
       where: { [field]: value },
-      loadEagerRelations: true,
+      loadEagerRelations: true
     });
   }
 
   async getCarsByField(field: keyof Car, value: any): Promise<Car[]> {
     return await this.dataSource.getRepository(Car).find({
       where: { [field]: value },
-      loadEagerRelations: true,
+      loadEagerRelations: true
     });
   }
 

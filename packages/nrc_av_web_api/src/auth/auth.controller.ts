@@ -1,9 +1,9 @@
 import { Body, Controller, Post, Res, UsePipes } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { HttpJoiValidatorPipe, constant } from '../core';
-import { LoginDTO, vLoginDTO } from './dto/loginDTO';
 import { Response } from 'express';
+import { HttpJoiValidatorPipe, constant } from '../core';
 import { AuthService } from './auth.service';
+import { LoginDTO, vLoginDTO } from './dto/loginDTO';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -19,16 +19,16 @@ export class AuthController {
 
     return res
       .cookie(constant.authController.tokenName, accessToken, {
-        maxAge: constant.authController.loginCookieTime,
+        maxAge: constant.authController.loginCookieTime
       })
       .send(accessToken);
   }
 
   @Post('/logout')
-  async logout(@Res() res: Response) {
+  logout(@Res() res: Response) {
     return res
       .cookie(constant.authController.tokenName, '', {
-        maxAge: 0,
+        maxAge: 0
       })
       .send();
   }

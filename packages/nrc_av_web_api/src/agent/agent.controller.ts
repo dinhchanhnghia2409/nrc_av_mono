@@ -1,15 +1,8 @@
-import { AgentService } from './agent.service';
-import {
-  Controller,
-  Param,
-  Post,
-  Res,
-  ParseIntPipe,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Param, Post, Res, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { UserGuard } from '../core';
+import { AgentService } from './agent.service';
 
 @ApiTags('agent')
 @Controller('agent')
@@ -19,10 +12,7 @@ export class AgentController {
   constructor(private readonly agentService: AgentService) {}
 
   @Post('/socket/:carId/ROS-master')
-  async runROSmaster(
-    @Param('carId', ParseIntPipe) carId: number,
-    @Res() res: Response,
-  ) {
+  async runROSmaster(@Param('carId', ParseIntPipe) carId: number, @Res() res: Response) {
     const result = await this.agentService.sendROSMasterCommand(carId);
     return res.send(result[0]);
   }
@@ -31,12 +21,9 @@ export class AgentController {
   async runROSnode(
     @Param('carId', ParseIntPipe) carId: number,
     @Param('rosNodeId', ParseIntPipe) rosNodeId: number,
-    @Res() res: Response,
+    @Res() res: Response
   ) {
-    const result = await this.agentService.sendROSLaunchCommand(
-      carId,
-      rosNodeId,
-    );
+    const result = await this.agentService.sendROSLaunchCommand(carId, rosNodeId);
     return res.send(result[0]);
   }
 }

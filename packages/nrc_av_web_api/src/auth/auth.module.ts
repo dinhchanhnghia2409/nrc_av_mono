@@ -11,16 +11,16 @@ import { AuthService } from './auth.service';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('jwt.secret'),
         signOptions: {
-          expiresIn: `${configService.get<number>('jwt.expirationTime')}s`,
-        },
-      }),
-    }),
+          expiresIn: `${configService.get<number>('jwt.expirationTime')}s`
+        }
+      })
+    })
   ],
   controllers: [AuthController],
   providers: [AuthService],
-  exports: [AuthService],
+  exports: [AuthService]
 })
 export class AuthModule {}

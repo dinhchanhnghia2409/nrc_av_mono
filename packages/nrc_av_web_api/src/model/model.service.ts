@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Interface } from '../core';
 import { DataSource } from 'typeorm';
+import { Interface } from '../core';
 
 @Injectable()
 export class ModelService {
@@ -10,9 +10,9 @@ export class ModelService {
     return this.dataSource.getRepository(Interface).find({
       where: {
         model: {
-          id: id,
-        },
-      },
+          id
+        }
+      }
     });
   }
 }

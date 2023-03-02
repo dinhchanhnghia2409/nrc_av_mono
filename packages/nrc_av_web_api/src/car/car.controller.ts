@@ -6,11 +6,10 @@ import {
   Put,
   Param,
   ParseIntPipe,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
-import { DataSource } from 'typeorm';
 import { Car, CarStatus, DatabaseService, UserGuard } from '../core';
 import { CarService } from './car.service';
 
@@ -21,7 +20,7 @@ import { CarService } from './car.service';
 export class CarController {
   constructor(
     private readonly databaseService: DatabaseService,
-    private readonly carService: CarService,
+    private readonly carService: CarService
   ) {}
 
   @Get('/active')
@@ -35,32 +34,16 @@ export class CarController {
   async getWaitingListCar(@Res() res: Response) {
     return res
       .status(HttpStatus.OK)
-      .send(
-        await this.databaseService.getManyByField(
-          Car,
-          'status',
-          CarStatus.WAITING,
-        ),
-      );
+      .send(await this.databaseService.getManyByField(Car, 'status', CarStatus.WAITING));
   }
 
   @Get('/:id')
-  async getCarById(
-    @Param('id', ParseIntPipe) id: number,
-    @Res() res: Response,
-  ) {
-    return res
-      .status(HttpStatus.OK)
-      .send(await this.carService.getCarByField('id', id));
+  async getCarById(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
+    return res.status(HttpStatus.OK).send(await this.carService.getCarByField('id', id));
   }
 
   @Put('/:id/status')
-  async registrationCar(
-    @Param('id', ParseIntPipe) id: number,
-    @Res() res: Response,
-  ) {
-    return res
-      .status(HttpStatus.OK)
-      .send(await this.carService.updateStatus(id));
+  async registrationCar(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
+    return res.status(HttpStatus.OK).send(await this.carService.updateStatus(id));
   }
 }

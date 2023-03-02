@@ -1,5 +1,5 @@
-import * as joi from 'joi';
 import { ApiProperty } from '@nestjs/swagger';
+import joi from 'joi';
 import { userValidateSchema } from '../../core/models';
 
 export class LoginDTO {
@@ -12,5 +12,5 @@ export class LoginDTO {
 
 export const vLoginDTO = joi.object<LoginDTO>({
   username: userValidateSchema.username,
-  password: userValidateSchema.password,
+  password: userValidateSchema.password
 });

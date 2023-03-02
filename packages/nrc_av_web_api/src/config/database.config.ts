@@ -12,7 +12,7 @@ export const DbModule = TypeOrmModule.forRootAsync({
     password: configService.get('database.password'),
     database: configService.get('database.name'),
     entities: [Car, Model, Agent, Cmd, Interface, User],
-    synchronize: true,
+    synchronize: true
   }),
-  inject: [ConfigService],
+  inject: [ConfigService]
 });

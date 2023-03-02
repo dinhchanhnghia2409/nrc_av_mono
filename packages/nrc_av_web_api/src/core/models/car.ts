@@ -1,8 +1,8 @@
+import joi from 'joi';
 import { Column, Entity, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 import { CarStatus } from '../enums';
 import { Agent } from './agent';
 import { Model } from './model';
-import * as joi from 'joi';
 
 @Entity()
 export class Car {
@@ -33,5 +33,5 @@ export class Car {
 
 export const carValidateSchema = {
   name: joi.string().min(0).max(40).trim(),
-  macAddress: joi.string().min(0).max(40).trim(),
+  macAddress: joi.string().min(0).max(40).trim()
 };

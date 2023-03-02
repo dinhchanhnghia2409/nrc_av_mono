@@ -3,7 +3,7 @@ import {
   ExecutionContext,
   HttpException,
   Injectable,
-  HttpStatus,
+  HttpStatus
 } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthService } from '../../auth/auth.service';
@@ -18,16 +18,14 @@ export interface JwtToken {
 export class UserGuard implements CanActivate {
   constructor(
     private readonly authService: AuthService,
-    private readonly databaseService: DatabaseService,
+    private readonly databaseService: DatabaseService
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req: Request = context.switchToHttp().getRequest();
 
     const authorization = req.cookies['access-token'] || '';
-    const { data, error } = await this.authService.verifyToken<JwtToken>(
-      authorization,
-    );
+    const { data, error } = await this.authService.verifyToken<JwtToken>(authorization);
     if (error) {
       throw new HttpException({}, HttpStatus.UNAUTHORIZED);
     }

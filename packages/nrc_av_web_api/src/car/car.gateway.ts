@@ -3,7 +3,7 @@ import { Server } from 'socket.io';
 import { SocketEnum } from '../core';
 
 @WebSocketGateway({
-  namespace: 'nissan',
+  namespace: 'nissan'
 })
 export class CarGateway {
   @WebSocketServer()

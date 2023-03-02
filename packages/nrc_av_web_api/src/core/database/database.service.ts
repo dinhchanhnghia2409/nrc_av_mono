@@ -5,11 +5,7 @@ import { DataSource, EntityTarget } from 'typeorm';
 export class DatabaseService {
   constructor(private dataSource: DataSource) {}
 
-  getOneByField<T>(
-    entity: EntityTarget<T>,
-    field: keyof T,
-    value: any,
-  ): Promise<T> {
+  getOneByField<T>(entity: EntityTarget<T>, field: keyof T, value: any): Promise<T> {
     return this.dataSource
       .getRepository(entity)
       .createQueryBuilder()
@@ -21,11 +17,7 @@ export class DatabaseService {
     return this.dataSource.getRepository(entity).find();
   }
 
-  getManyByField<T>(
-    entity: EntityTarget<T>,
-    field: keyof T,
-    value: any,
-  ): Promise<T[]> {
+  getManyByField<T>(entity: EntityTarget<T>, field: keyof T, value: any): Promise<T[]> {
     return this.dataSource
       .getRepository(entity)
       .createQueryBuilder()
