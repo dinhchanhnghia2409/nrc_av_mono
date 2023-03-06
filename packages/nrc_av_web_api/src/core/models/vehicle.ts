@@ -1,5 +1,5 @@
 import joi from 'joi';
-import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, OneToMany } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, OneToMany, JoinTable } from 'typeorm';
 import { VehicleStatus } from '../enums';
 import { Agent } from './agent';
 import { Model } from './model';
@@ -32,6 +32,7 @@ export class Vehicle {
   agent: Agent;
 
   @OneToMany(() => Node, (node) => node.vehicle, { eager: true })
+  @JoinTable({ name: 'nodeList' })
   nodes: Node[];
 }
 
