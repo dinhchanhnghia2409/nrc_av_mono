@@ -1,8 +1,7 @@
-export enum CarStatus {
+export enum VehicleStatus {
   WAITING = 'WAITING',
   ACTIVE = 'ACTIVE',
-  OFFLINE = 'OFFLINE',
-  REGISTERED = 'REGISTERED'
+  OFFLINE = 'OFFLINE'
 }
 
 export enum OSType {
@@ -22,6 +21,6 @@ export enum SocketEnum {
   EVENT_RUN_ROS_MASTER = 'nissan/ros/master',
   EVENT_RUN_ROS_NODE = 'nissan/ros/node',
   EVENT_REGISTRATION_RESPONSE = 'registrationResponse',
-  EVENT_CAR_ACTIVATION = 'carActivation',
+  EVENT_VEHICLE_ACTIVATION = 'vehicleActivation',
   RUN_ROS_MASTER_COMMAND = 'python ~/projects/nrc_ws/src/nrc_av/av/kelly_interface.py'
 }

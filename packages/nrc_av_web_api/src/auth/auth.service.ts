@@ -42,7 +42,7 @@ export class AuthService {
   }
 
   // ---------------------------Token Service---------------------------
-  async encryptAccessToken(tokenData: Record<any, any>, minutes?: number) {
+  async encryptAccessToken(tokenData: Record<any, any>, minutes?: number): Promise<string> {
     try {
       if (minutes) {
         return await this.jwtService.signAsync(tokenData, {

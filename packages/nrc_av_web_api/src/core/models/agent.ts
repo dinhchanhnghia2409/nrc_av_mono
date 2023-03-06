@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { AgentStatus } from '../enums';
-import { Car } from './car';
+import { Vehicle } from './vehicle';
 
 @Entity()
 export class Agent {
@@ -19,6 +19,6 @@ export class Agent {
   @Column({ default: AgentStatus.ACTIVE })
   status: AgentStatus;
 
-  @OneToMany(() => Car, (car) => car.agent)
-  cars: Car[];
+  @OneToMany(() => Vehicle, (vehicle) => vehicle.agent)
+  vehicles: Vehicle[];
 }

@@ -1,7 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { OSType } from '../enums';
-import { Car } from './car';
-import { Interface } from './interface';
+import { Vehicle } from './vehicle';
 
 @Entity()
 export class Model {
@@ -20,9 +19,6 @@ export class Model {
   @Column()
   osVersion: string;
 
-  @OneToMany(() => Car, (car) => car.model)
-  cars: Car[];
-
-  @OneToMany(() => Interface, (interfaces) => interfaces.model, { eager: true })
-  interfaces: Interface[];
+  @OneToMany(() => Vehicle, (vehicle) => vehicle.model)
+  vehicles: Vehicle[];
 }

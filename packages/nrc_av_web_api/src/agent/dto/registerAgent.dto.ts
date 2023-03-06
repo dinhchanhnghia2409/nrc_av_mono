@@ -1,6 +1,6 @@
 import { IsString } from 'class-validator';
 import joi from 'joi';
-import { carValidateSchema } from '../../core';
+import { vehicleValidateSchema } from '../../core';
 
 export class RegisterAgentDTO {
   @IsString()
@@ -23,9 +23,9 @@ export class RegisterAgentDTO {
 }
 
 export const vRegisterAgentDTO = joi.object<RegisterAgentDTO>({
-  name: carValidateSchema.name.required(),
+  name: vehicleValidateSchema.name.required(),
   model: joi.string().required(),
-  macAddress: carValidateSchema.macAddress.required(),
+  macAddress: vehicleValidateSchema.macAddress.required(),
   defaultInterface: joi.string().required(),
   licenseNumber: joi.string().required(),
   certKey: joi.string().required()

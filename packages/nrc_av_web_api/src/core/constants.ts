@@ -35,6 +35,6 @@ export const message = Object.freeze({
   invalidStatus: 'Invalid status',
   duplicatedField: 'Duplicated field',
   agentError: 'Agent error',
-  carNotFound: 'Car not found',
+  vehicleNotFound: 'Vehicle not found',
   modelNotFound: 'Model not found'
 });

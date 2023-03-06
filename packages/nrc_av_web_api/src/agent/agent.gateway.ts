@@ -8,15 +8,15 @@ import {
   WsException
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { CarService } from '../car/car.service';
 import { SocketEnum } from '../core';
+import { VehicleService } from '../vehicle/vehicle.service';
 import { RegisterAgentDTO } from './dto/registerAgent.dto';
 
 @WebSocketGateway({
   namespace: 'nissan'
 })
 export class AgentGateway {
-  constructor(private readonly carService: CarService) {}
+  constructor(private readonly vehicleService: VehicleService) {}
   @WebSocketServer()
   server: Server;
 
@@ -57,13 +57,13 @@ export class AgentGateway {
   @SubscribeMessage('join')
   async onEvent(@ConnectedSocket() client: Socket, @MessageBody() data: RegisterAgentDTO) {
     client.join(`${SocketEnum.ROOM_PREFIX}${data?.certKey}`);
-    const car = await this.carService.registerCar(data);
+    const vehicle = await this.vehicleService.registerVehicle(data);
 
     await this.emitToRoom(
       SocketEnum.EVENT_REGISTRATION_RESPONSE,
-      `${SocketEnum.ROOM_PREFIX}${car?.certKey}`,
+      `${SocketEnum.ROOM_PREFIX}${vehicle?.certKey}`,
       {
-        certKey: car.certKey
+        certKey: vehicle.certKey
       }
     );
   }

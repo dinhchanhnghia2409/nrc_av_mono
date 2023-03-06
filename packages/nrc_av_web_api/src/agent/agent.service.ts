@@ -1,6 +1,6 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { Car, Cmd, message, SocketEnum } from '../core';
+import { Vehicle, message, SocketEnum } from '../core';
 import { AgentGateway } from './agent.gateway';
 
 @Injectable()
@@ -10,18 +10,18 @@ export class AgentService {
     private readonly dataSource: DataSource
   ) {}
 
-  async sendROSMasterCommand(carId: number) {
-    const car = await this.dataSource.getRepository(Car).findOne({
-      where: { id: carId }
+  async sendROSMasterCommand(vehicleId: number) {
+    const vehicle = await this.dataSource.getRepository(Vehicle).findOne({
+      where: { id: vehicleId }
     });
-    if (!car) {
-      throw new HttpException(message.carNotFound, HttpStatus.NOT_FOUND);
+    if (!vehicle) {
+      throw new HttpException(message.vehicleNotFound, HttpStatus.NOT_FOUND);
     }
 
     try {
       return await this.agentGateway.emitToRoom(
         SocketEnum.EVENT_RUN_ROS_MASTER,
-        `${SocketEnum.ROOM_PREFIX}${car.certKey}`,
+        `${SocketEnum.ROOM_PREFIX}${vehicle.certKey}`,
         {
           data: SocketEnum.RUN_ROS_MASTER_COMMAND
         }
@@ -31,24 +31,23 @@ export class AgentService {
     }
   }
 
-  async sendROSLaunchCommand(carId: number, rosNodeId: number) {
-    const car = await this.dataSource.getRepository(Car).findOne({
-      where: { id: carId }
+  async sendROSLaunchCommand(vehicleId: number, rosNodeId: number) {
+    const vehicle = await this.dataSource.getRepository(Vehicle).findOne({
+      where: { id: vehicleId },
+      loadEagerRelations: true
     });
-    if (!car) {
-      throw new HttpException(message.carNotFound, HttpStatus.NOT_FOUND);
+    if (!vehicle) {
+      throw new HttpException(message.vehicleNotFound, HttpStatus.NOT_FOUND);
     }
 
-    const cmd = await this.dataSource.getRepository(Cmd).findOne({
-      where: { id: rosNodeId }
-    });
+    const node = vehicle.nodes.find((n) => n.id === rosNodeId);
 
     try {
       return await this.agentGateway.emitToRoom(
         SocketEnum.EVENT_RUN_ROS_NODE,
-        `${SocketEnum.ROOM_PREFIX}${car.certKey}`,
+        `${SocketEnum.ROOM_PREFIX}${vehicle.certKey}`,
         {
-          data: cmd.command
+          data: node.name
         }
       );
     } catch (error) {

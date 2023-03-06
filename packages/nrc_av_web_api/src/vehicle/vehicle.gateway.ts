@@ -5,7 +5,7 @@ import { SocketEnum } from '../core';
 @WebSocketGateway({
   namespace: 'nissan'
 })
-export class CarGateway {
+export class VehicleGateway {
   @WebSocketServer()
   server: Server;
 

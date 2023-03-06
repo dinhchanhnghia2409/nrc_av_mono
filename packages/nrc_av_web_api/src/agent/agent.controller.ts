@@ -11,19 +11,19 @@ import { AgentService } from './agent.service';
 export class AgentController {
   constructor(private readonly agentService: AgentService) {}
 
-  @Post('/socket/:carId/ROS-master')
-  async runROSmaster(@Param('carId', ParseIntPipe) carId: number, @Res() res: Response) {
-    const result = await this.agentService.sendROSMasterCommand(carId);
-    return res.send(result[0]);
+  @Post('/socket/:vehicleId/ROS-master')
+  async runROSmaster(@Param('vehicleId', ParseIntPipe) vehicleId: number, @Res() res: Response) {
+    const result = await this.agentService.sendROSMasterCommand(vehicleId);
+    return res.send(result);
   }
 
-  @Post('/socket/:carId/ROS-node/:rosNodeId')
+  @Post('/socket/:vehicleId/ROS-node/:rosNodeId')
   async runROSnode(
-    @Param('carId', ParseIntPipe) carId: number,
+    @Param('vehicleId', ParseIntPipe) vehicleId: number,
     @Param('rosNodeId', ParseIntPipe) rosNodeId: number,
     @Res() res: Response
   ) {
-    const result = await this.agentService.sendROSLaunchCommand(carId, rosNodeId);
-    return res.send(result[0]);
+    const result = await this.agentService.sendROSLaunchCommand(vehicleId, rosNodeId);
+    return res.send(result);
   }
 }

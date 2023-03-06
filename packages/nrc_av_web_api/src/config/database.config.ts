@@ -1,6 +1,6 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Agent, Car, Cmd, Interface, Model, User } from '../core';
+import { Agent, Vehicle, Model, User, Node } from '../core';
 
 export const DbModule = TypeOrmModule.forRootAsync({
   imports: [ConfigModule],
@@ -11,7 +11,7 @@ export const DbModule = TypeOrmModule.forRootAsync({
     username: configService.get('database.username'),
     password: configService.get('database.password'),
     database: configService.get('database.name'),
-    entities: [Car, Model, Agent, Cmd, Interface, User],
+    entities: [Vehicle, Model, Agent, User, Node],
     synchronize: true
   }),
   inject: [ConfigService]

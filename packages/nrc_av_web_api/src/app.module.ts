@@ -3,11 +3,9 @@ import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule/dist';
 import { AgentModule } from './agent/agent.module';
 import { AuthModule } from './auth/auth.module';
-import { CarModule } from './car/car.module';
 import { configuration, DbModule } from './config';
-import { InterfaceModule } from './interface/interface.module';
-import { ModelModule } from './model/model.module';
 import { UserModule } from './user/user.module';
+import { VehicleModule } from './vehicle/vehicle.module';
 
 @Module({
   imports: [
@@ -19,11 +17,9 @@ import { UserModule } from './user/user.module';
     }),
     ScheduleModule.forRoot(),
     DbModule,
-    CarModule,
+    VehicleModule,
     AuthModule,
-    UserModule,
-    ModelModule,
-    InterfaceModule
+    UserModule
   ]
 })
 export class AppModule {}
