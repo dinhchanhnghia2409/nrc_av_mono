@@ -1,5 +1,4 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { WsException } from '@nestjs/websockets';
 import { DataSource } from 'typeorm';
 import { RegisterAgentDTO } from '../agent/dto/registerAgent.dto';
 import { Vehicle, DatabaseService, VehicleStatus, Model, message, SocketEnum } from '../core';
@@ -43,10 +42,10 @@ export class VehicleService {
     if (vehicle) {
       return vehicle;
     }
-    const model = await this.databaseService.getOneByField(Model, 'name', modelName);
+    let model = await this.databaseService.getOneByField(Model, 'name', modelName);
 
     if (!model) {
-      throw new WsException(message.modelNotFound);
+      model = await this.databaseService.save(Model, { name: modelName } as Model);
     }
 
     vehicle = new Vehicle();

@@ -1,10 +1,8 @@
 import joi from 'joi';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity } from 'typeorm';
+import { BaseModel } from './base';
 @Entity()
-export class User {
-  @PrimaryGeneratedColumn('increment')
-  id: number;
-
+export class User extends BaseModel {
   @Column()
   username: string;
 

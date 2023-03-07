@@ -4,12 +4,6 @@ export enum VehicleStatus {
   OFFLINE = 'OFFLINE'
 }
 
-export enum OSType {
-  WINDOWS = 'WINDOWS',
-  LINUX = 'LINUX',
-  MACOS = 'MACOS'
-}
-
 export enum AgentStatus {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE'

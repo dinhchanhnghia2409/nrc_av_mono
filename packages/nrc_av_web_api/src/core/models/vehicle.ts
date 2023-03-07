@@ -1,15 +1,13 @@
 import joi from 'joi';
-import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, OneToMany, JoinTable } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, JoinTable } from 'typeorm';
 import { VehicleStatus } from '../enums';
 import { Agent } from './agent';
+import { BaseModel } from './base';
 import { Model } from './model';
-import { Node } from './node';
+import { NodeList } from './nodeList';
 
 @Entity()
-export class Vehicle {
-  @PrimaryGeneratedColumn('increment')
-  id: number;
-
+export class Vehicle extends BaseModel {
   @Column({ nullable: true })
   name: string;
 
@@ -31,9 +29,9 @@ export class Vehicle {
   @ManyToOne(() => Agent, (agent) => agent.vehicles, { eager: true })
   agent: Agent;
 
-  @OneToMany(() => Node, (node) => node.vehicle, { eager: true })
+  @OneToMany(() => NodeList, (nodeList) => nodeList.vehicle, { eager: true })
   @JoinTable({ name: 'nodeList' })
-  nodes: Node[];
+  nodeList: NodeList[];
 }
 
 export const vehicleValidateSchema = {

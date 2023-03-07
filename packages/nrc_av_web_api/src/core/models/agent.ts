@@ -1,12 +1,10 @@
-import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
 import { AgentStatus } from '../enums';
+import { BaseModel } from './base';
 import { Vehicle } from './vehicle';
 
 @Entity()
-export class Agent {
-  @PrimaryGeneratedColumn('increment')
-  id: number;
-
+export class Agent extends BaseModel {
   @Column()
   name: string;
 

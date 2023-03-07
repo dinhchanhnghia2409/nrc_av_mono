@@ -34,20 +34,22 @@ export class AgentService {
   async sendROSLaunchCommand(vehicleId: number, rosNodeId: number) {
     const vehicle = await this.dataSource.getRepository(Vehicle).findOne({
       where: { id: vehicleId },
-      loadEagerRelations: true
+      relations: ['nodeList', 'nodeList.rosNode']
     });
     if (!vehicle) {
       throw new HttpException(message.vehicleNotFound, HttpStatus.NOT_FOUND);
     }
 
-    const node = vehicle.nodes.find((n) => n.id === rosNodeId);
-
+    const rosNodeList = vehicle.nodeList.find((n) => n.rosNode_id === rosNodeId);
+    if (!rosNodeList) {
+      throw new HttpException(message.rosNodeNotFound, HttpStatus.NOT_FOUND);
+    }
     try {
       return await this.agentGateway.emitToRoom(
         SocketEnum.EVENT_RUN_ROS_NODE,
         `${SocketEnum.ROOM_PREFIX}${vehicle.certKey}`,
         {
-          data: node.name
+          data: rosNodeList.rosNode.name
         }
       );
     } catch (error) {
