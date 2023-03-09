@@ -22,9 +22,7 @@ export class AgentService {
       return await this.agentGateway.emitToRoom(
         SocketEnum.EVENT_RUN_ROS_MASTER,
         `${SocketEnum.ROOM_PREFIX}${vehicle.certKey}`,
-        {
-          data: SocketEnum.RUN_ROS_MASTER_COMMAND
-        }
+        {}
       );
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);

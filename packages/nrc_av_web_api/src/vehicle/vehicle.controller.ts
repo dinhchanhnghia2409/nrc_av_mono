@@ -14,7 +14,10 @@ import {
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { Vehicle, VehicleStatus, DatabaseService, UserGuard, HttpJoiValidatorPipe } from '../core';
-import { CreateNodeDTO, vCreateNodeDTO } from '../rosNode/dto/createNode.request.dto';
+import {
+  ROSNodesCreationDTO,
+  vROSNodesCreationDTO
+} from '../rosNode/dto/ROSNodesCreation.request.dto';
 import { ROSNodeService } from '../rosNode/rosNode.service';
 import { VehicleService } from './vehicle.service';
 
@@ -53,18 +56,23 @@ export class VehicleController {
     return res.status(HttpStatus.OK).send(await this.rosNodeService.getVehicleROSNodes(id));
   }
 
+  @Get(':id/ros-nodes/sync')
+  async syncVehicleNodes(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
+    return res.status(HttpStatus.OK).send(await this.rosNodeService.syncVehicleNodes(id));
+  }
+
   @Put('/:id/status')
   async registrationVehicle(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
     return res.status(HttpStatus.OK).send(await this.vehicleService.updateStatus(id));
   }
 
   @Post('/:id/ros-nodes')
-  @UsePipes(new HttpJoiValidatorPipe(vCreateNodeDTO))
+  @UsePipes(new HttpJoiValidatorPipe(vROSNodesCreationDTO))
   async addNodeForVehicle(
     @Param('id', ParseIntPipe) id: number,
     @Res() res: Response,
-    @Body() body: CreateNodeDTO
+    @Body() body: ROSNodesCreationDTO
   ) {
-    return res.status(HttpStatus.OK).send(await this.rosNodeService.createROSNode(id, body));
+    return res.status(HttpStatus.OK).send(await this.rosNodeService.syncROSNodes(id, body));
   }
 }

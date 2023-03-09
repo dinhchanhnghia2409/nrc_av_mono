@@ -16,5 +16,5 @@ export enum SocketEnum {
   EVENT_RUN_ROS_NODE = 'nissan/ros/node',
   EVENT_REGISTRATION_RESPONSE = 'registrationResponse',
   EVENT_VEHICLE_ACTIVATION = 'vehicleActivation',
-  RUN_ROS_MASTER_COMMAND = 'python ~/projects/nrc_ws/src/nrc_av/av/kelly_interface.py'
+  GET_LIST_ROS_NODE = 'nissan/ros/nodes'
 }

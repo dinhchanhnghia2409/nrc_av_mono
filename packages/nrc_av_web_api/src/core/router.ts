@@ -1,10 +1,9 @@
 import { INestApplication } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder } from '@nestjs/swagger';
 import { SwaggerModule } from '@nestjs/swagger/dist';
 import cookieParser from 'cookie-parser';
 
-export const router = (app: INestApplication, configService: ConfigService) => {
+export const router = (app: INestApplication) => {
   app.setGlobalPrefix('api/v1');
   app.use(cookieParser());
 
@@ -19,7 +18,7 @@ export const router = (app: INestApplication, configService: ConfigService) => {
   SwaggerModule.setup('api/explorer', app, document);
 
   app.enableCors({
-    origin: configService.get<string>('client.clientUrl'),
+    origin: true,
     preflightContinue: false,
     credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',

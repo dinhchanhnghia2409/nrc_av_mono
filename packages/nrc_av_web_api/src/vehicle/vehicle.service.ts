@@ -84,6 +84,17 @@ export class VehicleService {
     });
   }
 
+  async getExistedVehicle(id: number): Promise<Vehicle> {
+    const vehicle = await this.dataSource.getRepository(Vehicle).findOne({
+      where: { id },
+      relations: ['nodeList', 'nodeList.rosNode']
+    });
+    if (!vehicle) {
+      throw new HttpException(message.vehicleNotFound, HttpStatus.NOT_FOUND);
+    }
+    return vehicle;
+  }
+
   // @Cron('5 * * * * *')
   // async checkCarStatus() {
   //   const cars = await this.databaseService.getMany(Car);
