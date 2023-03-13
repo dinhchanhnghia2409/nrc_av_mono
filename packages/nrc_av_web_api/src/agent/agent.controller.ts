@@ -1,8 +1,18 @@
-import { Controller, Param, Post, Res, ParseIntPipe, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Param,
+  Post,
+  Res,
+  ParseIntPipe,
+  UseGuards,
+  UsePipes,
+  Body
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
-import { UserGuard } from '../core';
+import { HttpJoiValidatorPipe, UserGuard } from '../core';
 import { AgentService } from './agent.service';
+import { ROSNodesForRunningDTO, vROSNodesForRunningDTO } from './dto/ROSNodeForRunning.request.dto';
 
 @ApiTags('agent')
 @Controller('agent')
@@ -17,13 +27,14 @@ export class AgentController {
     return res.send(result);
   }
 
-  @Post('/socket/:vehicleId/ROS-node/:rosNodeId')
+  @Post('/socket/:vehicleId/ROS-node')
+  @UsePipes(new HttpJoiValidatorPipe(vROSNodesForRunningDTO))
   async runROSnode(
     @Param('vehicleId', ParseIntPipe) vehicleId: number,
-    @Param('rosNodeId', ParseIntPipe) rosNodeId: number,
-    @Res() res: Response
+    @Res() res: Response,
+    @Body() body: ROSNodesForRunningDTO
   ) {
-    const result = await this.agentService.sendROSLaunchCommand(vehicleId, rosNodeId);
+    const result = await this.agentService.sendROSNodesForRunning(vehicleId, body);
     return res.send(result);
   }
 }

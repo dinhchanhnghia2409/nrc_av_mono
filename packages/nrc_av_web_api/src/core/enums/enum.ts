@@ -16,5 +16,6 @@ export enum SocketEnum {
   EVENT_RUN_ROS_NODE = 'nissan/ros/node',
   EVENT_REGISTRATION_RESPONSE = 'registrationResponse',
   EVENT_VEHICLE_ACTIVATION = 'vehicleActivation',
-  GET_LIST_ROS_NODE = 'nissan/ros/nodes'
+  GET_LIST_ROS_NODE = 'nissan/ros/nodes',
+  GET_STATUS_ROS_NODES = 'nissan/ros/nodes-status'
 }

@@ -18,17 +18,19 @@ export class VehicleService {
     if (vehicle.status !== VehicleStatus.WAITING) {
       throw new HttpException(message.invalidStatus, HttpStatus.BAD_REQUEST);
     }
-    vehicle.status = VehicleStatus.ACTIVE;
 
-    vehicle = await this.databaseService.save(Vehicle, vehicle);
     try {
-      await this.vehicleGateway.emitToRoom(
+      const resultFromVehicle = (await this.vehicleGateway.emitToRoom(
         SocketEnum.EVENT_VEHICLE_ACTIVATION,
         `${SocketEnum.ROOM_PREFIX}${vehicle.certKey}`,
         {
           certKey: vehicle.certKey
         }
-      );
+      )) as any[] | { error: string }[];
+      await this.checkResponseFromVehicle(resultFromVehicle, vehicle);
+
+      vehicle.status = VehicleStatus.ACTIVE;
+      vehicle = await this.databaseService.save(Vehicle, vehicle);
     } catch (err) {
       throw new HttpException(message.agentError, HttpStatus.SERVICE_UNAVAILABLE);
     }
@@ -40,6 +42,9 @@ export class VehicleService {
     const { macAddress, model: modelName, certKey, name } = registerAgentDTO;
     let vehicle = await this.databaseService.getOneByField(Vehicle, 'certKey', certKey);
     if (vehicle) {
+      vehicle.isOnline = true;
+      vehicle.lastConnected = new Date();
+      vehicle = await this.databaseService.save(Vehicle, vehicle);
       return vehicle;
     }
     let model = await this.databaseService.getOneByField(Model, 'name', modelName);
@@ -53,6 +58,7 @@ export class VehicleService {
     vehicle.macAddress = macAddress;
     vehicle.model = model;
     vehicle.name = name;
+    vehicle.isOnline = true;
     vehicle.lastConnected = new Date();
 
     vehicle = await this.databaseService.save(Vehicle, vehicle);
@@ -93,6 +99,25 @@ export class VehicleService {
       throw new HttpException(message.vehicleNotFound, HttpStatus.NOT_FOUND);
     }
     return vehicle;
+  }
+
+  async checkResponseFromVehicle(resultFromVehicle: any[] | { error: string }[], vehicle: Vehicle) {
+    if (Array.isArray(resultFromVehicle) && resultFromVehicle.length <= 0) {
+      vehicle.isOnline = false;
+      vehicle.nodeList = undefined;
+      await this.dataSource.getRepository(Vehicle).save(vehicle);
+      throw message.agentIsOffline;
+    }
+
+    const error = [];
+    resultFromVehicle.forEach((r) => {
+      if (r.error) {
+        error.push(r.error);
+      }
+    });
+    if (error.length > 0) {
+      throw { error };
+    }
   }
 
   // @Cron('5 * * * * *')

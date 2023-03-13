@@ -61,6 +61,11 @@ export class VehicleController {
     return res.status(HttpStatus.OK).send(await this.rosNodeService.syncVehicleNodes(id));
   }
 
+  @Get('/:id/ros-nodes/status')
+  async getVehicleROSNodesStatus(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
+    return res.send(await this.rosNodeService.getROSNodeStatus(id));
+  }
+
   @Put('/:id/status')
   async registrationVehicle(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
     return res.status(HttpStatus.OK).send(await this.vehicleService.updateStatus(id));

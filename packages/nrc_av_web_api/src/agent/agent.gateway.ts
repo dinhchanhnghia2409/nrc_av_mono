@@ -59,12 +59,14 @@ export class AgentGateway {
     client.join(`${SocketEnum.ROOM_PREFIX}${data?.certKey}`);
     const vehicle = await this.vehicleService.registerVehicle(data);
 
-    await this.emitToRoom(
+    const resultFromVehicle = (await this.emitToRoom(
       SocketEnum.EVENT_REGISTRATION_RESPONSE,
       `${SocketEnum.ROOM_PREFIX}${vehicle?.certKey}`,
       {
         certKey: vehicle.certKey
       }
-    );
+    )) as any[] | { error: string }[];
+
+    await this.vehicleService.checkResponseFromVehicle(resultFromVehicle, vehicle);
   }
 }

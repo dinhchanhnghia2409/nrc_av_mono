@@ -37,5 +37,6 @@ export const message = Object.freeze({
   agentError: 'Agent error',
   vehicleNotFound: 'Vehicle not found',
   modelNotFound: 'Model not found',
-  rosNodeNotFound: 'Ros node not found'
+  rosNodeNotFound: 'Ros node not found',
+  agentIsOffline: 'Agent is offline'
 });

@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { ROSNode, NodeList, SocketEnum } from '../core';
+import { ROSNode, NodeList, SocketEnum, Vehicle } from '../core';
 import { VehicleService } from '../vehicle/vehicle.service';
 import { VehicleGateway } from './../vehicle/vehicle.gateway';
 import { ROSNodeResponseDTO } from './dto/rosNode.response.dto';
 import { ROSNodesCreationDTO } from './dto/ROSNodesCreation.request.dto';
+import { ROSNodeStatusResponseDTO } from './dto/rosNodeStatus.response.dto';
 
 @Injectable()
 export class ROSNodeService {
@@ -39,8 +40,13 @@ export class ROSNodeService {
   ): Promise<{ currentNodes: ROSNodeResponseDTO[]; latestNodes: ROSNode[] }> {
     const vehicle = await this.vehicleService.getExistedVehicle(id);
     const currentNodes: ROSNodeResponseDTO[] = await this.getROSNodeByVehicleId(id);
+    let latestNodes: ROSNode[] = [];
 
-    const latestNodes = await this.getROSNodeFromAgent(vehicle.certKey);
+    try {
+      latestNodes = await this.getROSNodeFromAgent(vehicle);
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
     return {
       currentNodes,
@@ -48,12 +54,13 @@ export class ROSNodeService {
     };
   }
 
-  async getROSNodeFromAgent(certKey: string): Promise<ROSNode[]> {
+  async getROSNodeFromAgent(vehicle: Vehicle): Promise<ROSNode[]> {
     const result = (await this.vehicleGateway.emitToRoom(
       SocketEnum.GET_LIST_ROS_NODE,
-      `${SocketEnum.ROOM_PREFIX}${certKey}`,
+      `${SocketEnum.ROOM_PREFIX}${vehicle.certKey}`,
       {}
     )) as [ROSNode[]];
+    await this.vehicleService.checkResponseFromVehicle(result, vehicle);
     return result.reduce((acc, cur) => [...acc, ...cur], []);
   }
 
@@ -98,5 +105,24 @@ export class ROSNodeService {
       await transactionalEntityManager.save(NodeList, deletedNodeList);
     });
     return rosNodes.length ? existedROSNodes : [];
+  }
+
+  async getROSNodeStatus(vehicleId: number): Promise<ROSNodeStatusResponseDTO[]> {
+    const vehicle = await this.vehicleService.getExistedVehicle(vehicleId);
+    return await this.getROSNodeStatusByVehicle(vehicle);
+  }
+
+  async getROSNodeStatusByVehicle(vehicle: Vehicle): Promise<ROSNodeStatusResponseDTO[]> {
+    const result = (await this.vehicleGateway.emitToRoom(
+      SocketEnum.GET_STATUS_ROS_NODES,
+      `${SocketEnum.ROOM_PREFIX}${vehicle.certKey}`,
+      vehicle.nodeList
+        .filter((nodeList) => !nodeList.isDeleted)
+        .map((nodeList) => ({
+          name: nodeList.rosNode.name,
+          packageName: nodeList.rosNode.packageName
+        }))
+    )) as [ROSNodeStatusResponseDTO[]];
+    return result.reduce((acc, cur) => [...acc, ...cur], []);
   }
 }

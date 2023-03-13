@@ -10,6 +10,7 @@ import { AgentService } from './agent.service';
 @Module({
   imports: [forwardRef(() => VehicleModule), DatabaseModule, AuthModule],
   controllers: [AgentController],
-  providers: [AgentService, AgentGateway]
+  providers: [AgentService, AgentGateway],
+  exports: [AgentService, AgentGateway]
 })
 export class AgentModule {}

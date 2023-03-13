@@ -13,11 +13,11 @@ export class NodeList extends BaseRelationModel {
 
   @ManyToOne(() => Vehicle, (vehicle) => vehicle.id)
   @JoinColumn({ name: 'vehicle_id' })
-  public vehicle!: Vehicle;
+  public vehicle: Vehicle;
 
   @ManyToOne(() => ROSNode, (node) => node.id)
   @JoinColumn({ name: 'rosNode_id' })
-  public rosNode!: ROSNode;
+  public rosNode: ROSNode;
 
   @Column({ default: false })
   isDeleted: boolean;

@@ -17,19 +17,22 @@ export class Vehicle extends BaseModel {
   @Column({ nullable: false, unique: true })
   certKey: string;
 
+  @Column({ nullable: false, default: false })
+  isOnline: boolean;
+
   @Column()
   lastConnected: Date;
 
   @Column({ default: VehicleStatus.WAITING })
   status: VehicleStatus;
 
-  @ManyToOne(() => Model, (model) => model.vehicles, { eager: true })
+  @ManyToOne(() => Model, (model) => model.vehicles)
   model: Model;
 
-  @ManyToOne(() => Agent, (agent) => agent.vehicles, { eager: true })
+  @ManyToOne(() => Agent, (agent) => agent.vehicles)
   agent: Agent;
 
-  @OneToMany(() => NodeList, (nodeList) => nodeList.vehicle, { eager: true })
+  @OneToMany(() => NodeList, (nodeList) => nodeList.vehicle)
   @JoinTable({ name: 'nodeList' })
   nodeList: NodeList[];
 }
