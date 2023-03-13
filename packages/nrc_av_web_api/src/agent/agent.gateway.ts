@@ -40,9 +40,10 @@ export class AgentGateway {
     console.log('connected', client.id);
   }
 
-  handleDisconnect(client: { id: any }) {
+  async handleDisconnect(client: any) {
     // eslint-disable-next-line no-console
     console.log('disconnected', client.id);
+    await this.vehicleService.handlevehicleDisconnection(client.handshake.query['certKey']);
   }
 
   @UsePipes(

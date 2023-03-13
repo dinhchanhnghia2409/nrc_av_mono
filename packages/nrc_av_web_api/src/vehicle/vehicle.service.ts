@@ -83,9 +83,12 @@ export class VehicleService {
     });
   }
 
-  async getVehiclesByField(field: keyof Vehicle, value: any): Promise<Vehicle[]> {
+  async getActiveOnlineVehicles(): Promise<Vehicle[]> {
     return await this.dataSource.getRepository(Vehicle).find({
-      where: { [field]: value },
+      where: {
+        status: VehicleStatus.ACTIVE,
+        isOnline: true
+      },
       loadEagerRelations: true
     });
   }
@@ -120,19 +123,15 @@ export class VehicleService {
     }
   }
 
-  // @Cron('5 * * * * *')
-  // async checkCarStatus() {
-  //   const cars = await this.databaseService.getMany(Car);
-  //   if (!cars || cars.length === 0) return;
-
-  //   cars.forEach((car) => {
-  //     const lastConnected = moment(car.lastConnected).add(45, 'seconds');
-  //     const now = moment(new Date());
-  //     if (now.isAfter(lastConnected)) {
-  //       car.status = CarStatus.OFFLINE;
-  //     }
-  //   });
-
-  //   await this.databaseService.saveMany(Car, cars);
-  // }
+  async handlevehicleDisconnection(certKey: string): Promise<void> {
+    const vehicle = await this.dataSource.getRepository(Vehicle).findOne({
+      where: {
+        certKey
+      }
+    });
+    if (vehicle) {
+      vehicle.isOnline = false;
+      await this.dataSource.getRepository(Vehicle).save(vehicle);
+    }
+  }
 }

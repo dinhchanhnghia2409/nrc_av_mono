@@ -34,9 +34,7 @@ export class VehicleController {
 
   @Get('/active')
   async listActiveVehicle(@Res() res: Response) {
-    return res
-      .status(HttpStatus.OK)
-      .send(await this.vehicleService.getVehiclesByField('status', VehicleStatus.ACTIVE));
+    return res.status(HttpStatus.OK).send(await this.vehicleService.getActiveOnlineVehicles());
   }
 
   @Get('/waiting')
