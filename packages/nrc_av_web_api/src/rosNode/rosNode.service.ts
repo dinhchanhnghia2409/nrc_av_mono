@@ -4,7 +4,7 @@ import { ROSNode, NodeList, SocketEnum, Vehicle } from '../core';
 import { VehicleService } from '../vehicle/vehicle.service';
 import { VehicleGateway } from './../vehicle/vehicle.gateway';
 import { ROSNodeResponseDTO } from './dto/rosNode.response.dto';
-import { ROSNodesCreationDTO } from './dto/ROSNodesCreation.request.dto';
+import { ROSNodesCreationDTO } from './dto/rosNodesCreation.request.dto';
 import { ROSNodeStatusResponseDTO } from './dto/rosNodeStatus.response.dto';
 
 @Injectable()

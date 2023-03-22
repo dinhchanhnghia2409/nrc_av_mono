@@ -2,6 +2,7 @@ import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { RegisterAgentDTO } from '../agent/dto/registerAgent.dto';
 import { Vehicle, DatabaseService, VehicleStatus, Model, message, SocketEnum } from '../core';
+import { LaunchFileFoRunningDTO } from './dto/launchFileForRunning.request.dto';
 import { VehicleGateway } from './vehicle.gateway';
 
 @Injectable()
@@ -133,5 +134,41 @@ export class VehicleService {
       vehicle.isOnline = false;
       await this.dataSource.getRepository(Vehicle).save(vehicle);
     }
+  }
+
+  async sendLaunchFileForRunning(
+    vehicleId: number,
+    launchFileFoRunningDTO: LaunchFileFoRunningDTO
+  ) {
+    const vehicle = await this.getExistedVehicle(vehicleId);
+    const { names: fileNames } = launchFileFoRunningDTO;
+    const resultFromVehicle = (await this.vehicleGateway.emitToRoom(
+      SocketEnum.EVENT_RUN_INTERFACE,
+      `${SocketEnum.ROOM_PREFIX}${vehicle.certKey}`,
+      {
+        fileNames
+      }
+    )) as any[] | { error: string }[];
+    try {
+      await this.checkResponseFromVehicle(resultFromVehicle, vehicle);
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+    return resultFromVehicle;
+  }
+
+  async getLaunchFileStatus(vehicleId: number) {
+    const vehicle = await this.getExistedVehicle(vehicleId);
+    const resultFromVehicle = (await this.vehicleGateway.emitToRoom(
+      SocketEnum.EVENT_GET_LAUNCH_FILE_STATUS,
+      `${SocketEnum.ROOM_PREFIX}${vehicle.certKey}`,
+      {}
+    )) as any[];
+    try {
+      await this.checkResponseFromVehicle(resultFromVehicle, vehicle);
+    } catch (err) {
+      return [];
+    }
+    return resultFromVehicle.reduce((acc, cur) => [...acc, ...cur], []);
   }
 }

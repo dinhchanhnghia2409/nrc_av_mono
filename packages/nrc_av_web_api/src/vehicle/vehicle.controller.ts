@@ -15,10 +15,15 @@ import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { Vehicle, VehicleStatus, DatabaseService, UserGuard, HttpJoiValidatorPipe } from '../core';
 import {
-  ROSNodesCreationDTO,
-  vROSNodesCreationDTO
-} from '../rosNode/dto/ROSNodesCreation.request.dto';
+  vROSNodesCreationDTO,
+  ROSNodesCreationDTO
+} from '../rosNode/dto/rosNodesCreation.request.dto';
+
 import { ROSNodeService } from '../rosNode/rosNode.service';
+import {
+  LaunchFileFoRunningDTO,
+  vLaunchFileFoRunningDTO
+} from './dto/launchFileForRunning.request.dto';
 import { VehicleService } from './vehicle.service';
 
 @ApiTags('vehicle')
@@ -64,6 +69,11 @@ export class VehicleController {
     return res.send(await this.rosNodeService.getROSNodeStatus(id));
   }
 
+  @Get('/:id/launch-file/status')
+  async getVehicleLaunchFileStatus(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
+    return res.send(await this.vehicleService.getLaunchFileStatus(id));
+  }
+
   @Put('/:id/status')
   async registrationVehicle(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
     return res.status(HttpStatus.OK).send(await this.vehicleService.updateStatus(id));
@@ -77,5 +87,17 @@ export class VehicleController {
     @Body() body: ROSNodesCreationDTO
   ) {
     return res.status(HttpStatus.OK).send(await this.rosNodeService.syncROSNodes(id, body));
+  }
+
+  @Post('/:id/launch-file')
+  @UsePipes(new HttpJoiValidatorPipe(vLaunchFileFoRunningDTO))
+  async sendLaunchFileForRunning(
+    @Param('id', ParseIntPipe) id: number,
+    @Res() res: Response,
+    @Body() body: LaunchFileFoRunningDTO
+  ) {
+    return res
+      .status(HttpStatus.OK)
+      .send(await this.vehicleService.sendLaunchFileForRunning(id, body));
   }
 }
