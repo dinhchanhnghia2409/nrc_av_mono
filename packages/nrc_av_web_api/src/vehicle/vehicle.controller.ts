@@ -15,15 +15,18 @@ import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { Vehicle, VehicleStatus, DatabaseService, UserGuard, HttpJoiValidatorPipe } from '../core';
 import {
-  vROSNodesCreationDTO,
-  ROSNodesCreationDTO
+  ROSNodesCreationDTO,
+  vROSNodesCreationDTO
 } from '../rosNode/dto/rosNodesCreation.request.dto';
-
 import { ROSNodeService } from '../rosNode/rosNode.service';
 import {
-  LaunchFileFoRunningDTO,
-  vLaunchFileFoRunningDTO
+  LaunchFileForRunningDTO,
+  vLaunchFileForRunningDTO
 } from './dto/launchFileForRunning.request.dto';
+import {
+  LaunchFileForStoppingDTO,
+  vLaunchFileForStoppingDTO
+} from './dto/launchFileForStopping.request.dto';
 import { VehicleService } from './vehicle.service';
 
 @ApiTags('vehicle')
@@ -90,14 +93,26 @@ export class VehicleController {
   }
 
   @Post('/:id/launch-file')
-  @UsePipes(new HttpJoiValidatorPipe(vLaunchFileFoRunningDTO))
+  @UsePipes(new HttpJoiValidatorPipe(vLaunchFileForRunningDTO))
   async sendLaunchFileForRunning(
     @Param('id', ParseIntPipe) id: number,
     @Res() res: Response,
-    @Body() body: LaunchFileFoRunningDTO
+    @Body() body: LaunchFileForRunningDTO
   ) {
     return res
       .status(HttpStatus.OK)
       .send(await this.vehicleService.sendLaunchFileForRunning(id, body));
+  }
+
+  @Post('/:id/launch-file-termination')
+  @UsePipes(new HttpJoiValidatorPipe(vLaunchFileForStoppingDTO))
+  async stopLaunchFile(
+    @Param('id', ParseIntPipe) id: number,
+    @Res() res: Response,
+    @Body() body: LaunchFileForStoppingDTO
+  ) {
+    return res
+      .status(HttpStatus.OK)
+      .send(await this.vehicleService.sendLaunchFileForStopping(id, body));
   }
 }

@@ -19,5 +19,6 @@ export enum SocketEnum {
   GET_LIST_ROS_NODE = 'nissan/ros/nodes',
   GET_STATUS_ROS_NODES = 'nissan/ros/nodes-status',
   EVENT_RUN_INTERFACE = 'nissan/interface/run',
-  EVENT_GET_LAUNCH_FILE_STATUS = 'nissan/ros/launch-file-status'
+  EVENT_GET_LAUNCH_FILE_STATUS = 'nissan/ros/launch-file-status',
+  EVENT_STOP_INTERFACE = 'nissan/interface/stop'
 }

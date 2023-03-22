@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import joi from 'joi';
 
-export class LaunchFileForRunningDTO {
+export class LaunchFileForStoppingDTO {
   @ApiProperty({
-    description: 'List name of interface to run',
+    description: 'List name of interface to stop',
     example: ['kelly_interface'],
     isArray: true,
     type: String
@@ -11,6 +11,6 @@ export class LaunchFileForRunningDTO {
   names: string[];
 }
 
-export const vLaunchFileForRunningDTO = joi.object<LaunchFileForRunningDTO>({
+export const vLaunchFileForStoppingDTO = joi.object<LaunchFileForStoppingDTO>({
   names: joi.array().items(joi.string().required()).required()
 });
