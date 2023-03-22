@@ -6,7 +6,7 @@ import { router } from './core';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get<ConfigService>(ConfigService);
-  router(app);
+  router(app, configService);
 
   await app.listen(configService.get<number>('SERVER_PORT'));
 }

@@ -10,15 +10,21 @@ export enum AgentStatus {
 }
 
 export enum SocketEnum {
-  TIME_OUT = 5000,
-  ROOM_PREFIX = 'nissan/',
-  EVENT_RUN_ROS_MASTER = 'nissan/ros/master',
-  EVENT_RUN_ROS_NODE = 'nissan/ros/node',
-  EVENT_REGISTRATION_RESPONSE = 'registrationResponse',
-  EVENT_VEHICLE_ACTIVATION = 'vehicleActivation',
-  GET_LIST_ROS_NODE = 'nissan/ros/nodes',
+  ROOM_PREFIX = 'nissan/'
+}
+
+export enum SocketEventEnum {
+  REGISTRATION_REQUEST = 'nissan/vehicle/registration-request',
+  VEHICLE_REGISTRATION = 'nissan/vehicle/registration',
+  REGISTRATION_RESPONSE = 'nissan/vehicle/registration-response',
+  VEHICLE_ACTIVATION = 'nissan/vehicle/activation',
+
+  RUN_ROS_MASTER = 'nissan/ros/master',
+  RUN_ROS_NODE = 'nissan/ros/node',
+  GET_ROS_NODES = 'nissan/ros/nodes',
   GET_STATUS_ROS_NODES = 'nissan/ros/nodes-status',
-  EVENT_RUN_INTERFACE = 'nissan/interface/run',
-  EVENT_GET_LAUNCH_FILE_STATUS = 'nissan/ros/launch-file-status',
-  EVENT_STOP_INTERFACE = 'nissan/interface/stop'
+
+  RUN_INTERFACE = 'nissan/interface/run',
+  GET_INTERFACE_STATUS = 'nissan/interface/status',
+  STOP_INTERFACE = 'nissan/interface/stop'
 }

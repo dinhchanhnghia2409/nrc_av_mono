@@ -1,12 +1,14 @@
-import { Body, Controller, Post, Res, UsePipes } from '@nestjs/common';
+import { Body, Controller, Post, Res, UseInterceptors, UsePipes } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { HttpJoiValidatorPipe, constant } from '../core';
+import { TimeoutInterceptor } from '../core/interceptors';
 import { AuthService } from './auth.service';
 import { LoginDTO, vLoginDTO } from './dto/loginDTO';
 
 @ApiTags('auth')
 @Controller('auth')
+@UseInterceptors(TimeoutInterceptor)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 

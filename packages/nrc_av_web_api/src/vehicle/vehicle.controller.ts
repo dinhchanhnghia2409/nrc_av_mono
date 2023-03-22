@@ -9,11 +9,13 @@ import {
   UseGuards,
   Post,
   UsePipes,
-  Body
+  Body,
+  UseInterceptors
 } from '@nestjs/common';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
-import { Vehicle, VehicleStatus, DatabaseService, UserGuard, HttpJoiValidatorPipe } from '../core';
+import { UserGuard, HttpJoiValidatorPipe } from '../core';
+import { TimeoutInterceptor } from '../core/interceptors';
 import {
   ROSNodesCreationDTO,
   vROSNodesCreationDTO
@@ -27,15 +29,16 @@ import {
   LaunchFileForStoppingDTO,
   vLaunchFileForStoppingDTO
 } from './dto/launchFileForStopping.request.dto';
+import { ROSNodesForRunningDTO, vROSNodesForRunningDTO } from './dto/rosNodeForRunning.request.dto';
 import { VehicleService } from './vehicle.service';
 
 @ApiTags('vehicle')
 @Controller('vehicle')
 @ApiCookieAuth()
 @UseGuards(UserGuard)
+@UseInterceptors(TimeoutInterceptor)
 export class VehicleController {
   constructor(
-    private readonly databaseService: DatabaseService,
     private readonly vehicleService: VehicleService,
     private readonly rosNodeService: ROSNodeService
   ) {}
@@ -47,29 +50,32 @@ export class VehicleController {
 
   @Get('/waiting')
   async listWaitingVehicle(@Res() res: Response) {
-    return res
-      .status(HttpStatus.OK)
-      .send(await this.databaseService.getManyByField(Vehicle, 'status', VehicleStatus.WAITING));
+    return res.status(HttpStatus.OK).send(await this.vehicleService.getWaitingOnlineVehicles());
   }
 
   @Get('/:id')
   async getVehicleById(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
-    return res.status(HttpStatus.OK).send(await this.vehicleService.getVehicleByField('id', id));
+    return res.status(HttpStatus.OK).send(await this.vehicleService.getVehicle(id));
   }
 
-  @Get(':id/ros-nodes')
+  @Get(':id/ROS-nodes')
   async getVehicleNodes(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
     return res.status(HttpStatus.OK).send(await this.rosNodeService.getVehicleROSNodes(id));
   }
 
-  @Get(':id/ros-nodes/sync')
+  @Get('/:id/ROS-nodes/sync')
   async syncVehicleNodes(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
     return res.status(HttpStatus.OK).send(await this.rosNodeService.syncVehicleNodes(id));
   }
 
-  @Get('/:id/ros-nodes/status')
+  @Get('/:id/ROS-nodes/status')
   async getVehicleROSNodesStatus(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
     return res.send(await this.rosNodeService.getROSNodeStatus(id));
+  }
+
+  @Put('/:id/activation')
+  async activateVehicle(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
+    return res.status(HttpStatus.OK).send(await this.vehicleService.activateVehicle(id));
   }
 
   @Get('/:id/launch-file/status')
@@ -77,19 +83,31 @@ export class VehicleController {
     return res.send(await this.vehicleService.getLaunchFileStatus(id));
   }
 
-  @Put('/:id/status')
-  async registrationVehicle(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
-    return res.status(HttpStatus.OK).send(await this.vehicleService.updateStatus(id));
-  }
-
-  @Post('/:id/ros-nodes')
+  @Post('/:id/ROS-nodes')
   @UsePipes(new HttpJoiValidatorPipe(vROSNodesCreationDTO))
-  async addNodeForVehicle(
+  async updateVehicleNodes(
     @Param('id', ParseIntPipe) id: number,
     @Res() res: Response,
     @Body() body: ROSNodesCreationDTO
   ) {
-    return res.status(HttpStatus.OK).send(await this.rosNodeService.syncROSNodes(id, body));
+    return res.status(HttpStatus.OK).send(await this.rosNodeService.updateVehicleNodes(id, body));
+  }
+
+  @Post('/:id/ROS-master-execution')
+  async runROSmaster(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
+    const result = await this.vehicleService.sendROSMasterCommand(id);
+    return res.status(HttpStatus.OK).send(result);
+  }
+
+  @Post('/:vehicleId/ROS-node-execution')
+  @UsePipes(new HttpJoiValidatorPipe(vROSNodesForRunningDTO))
+  async runROSnode(
+    @Param('vehicleId', ParseIntPipe) vehicleId: number,
+    @Res() res: Response,
+    @Body() body: ROSNodesForRunningDTO
+  ) {
+    const result = await this.vehicleService.sendROSNodesForRunning(vehicleId, body);
+    return res.status(HttpStatus.OK).send(result);
   }
 
   @Post('/:id/launch-file')

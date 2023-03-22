@@ -1,13 +1,11 @@
 import { Module } from '@nestjs/common';
 import { forwardRef } from '@nestjs/common/utils';
-import { DatabaseModule } from '../core';
+import { AgentModule } from '../agent/agent.module';
 import { VehicleModule } from '../vehicle/vehicle.module';
-import { ROSNodesController } from './rosNode.controller';
 import { ROSNodeService } from './rosNode.service';
 
 @Module({
-  imports: [DatabaseModule, forwardRef(() => VehicleModule)],
-  controllers: [ROSNodesController],
+  imports: [forwardRef(() => VehicleModule), forwardRef(() => AgentModule)],
   providers: [ROSNodeService],
   exports: [ROSNodeService]
 })

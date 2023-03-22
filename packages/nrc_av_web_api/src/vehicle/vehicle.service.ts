@@ -1,40 +1,48 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { RegisterAgentDTO } from '../agent/dto/registerAgent.dto';
-import { Vehicle, DatabaseService, VehicleStatus, Model, message, SocketEnum } from '../core';
+import { AgentGateway } from '../agent/agent.gateway';
+import {
+  Vehicle,
+  VehicleStatus,
+  Model,
+  message,
+  SocketEnum,
+  IResponse,
+  ISuccessResponse,
+  SocketEventEnum
+} from '../core';
 import { LaunchFileForRunningDTO } from './dto/launchFileForRunning.request.dto';
 import { LaunchFileForStoppingDTO } from './dto/launchFileForStopping.request.dto';
-import { VehicleGateway } from './vehicle.gateway';
+import { RegisterAgentDTO } from './dto/registerAgent.dto';
+import { ROSNodesForRunningDTO } from './dto/rosNodeForRunning.request.dto';
 
 @Injectable()
 export class VehicleService {
   constructor(
-    private readonly databaseService: DatabaseService,
     private readonly dataSource: DataSource,
-    private readonly vehicleGateway: VehicleGateway
+    private readonly agentGateway: AgentGateway
   ) {}
 
-  async updateStatus(id: number): Promise<Vehicle> {
-    let vehicle = await this.databaseService.getOneByField(Vehicle, 'id', id);
-
+  async activateVehicle(id: number): Promise<Vehicle> {
+    let vehicle = await this.getVehicle(id);
     if (vehicle.status !== VehicleStatus.WAITING) {
       throw new HttpException(message.invalidStatus, HttpStatus.BAD_REQUEST);
     }
 
     try {
-      const resultFromVehicle = (await this.vehicleGateway.emitToRoom(
-        SocketEnum.EVENT_VEHICLE_ACTIVATION,
-        `${SocketEnum.ROOM_PREFIX}${vehicle.certKey}`,
-        {
-          certKey: vehicle.certKey
-        }
-      )) as any[] | { error: string }[];
-      await this.checkResponseFromVehicle(resultFromVehicle, vehicle);
-
-      vehicle.status = VehicleStatus.ACTIVE;
-      vehicle = await this.databaseService.save(Vehicle, vehicle);
+      await this.getResultFromAgent(vehicle, SocketEventEnum.VEHICLE_ACTIVATION, {
+        certKey: vehicle.certKey
+      });
     } catch (err) {
-      throw new HttpException(message.agentError, HttpStatus.SERVICE_UNAVAILABLE);
+      throw new HttpException(err, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    try {
+      vehicle.status = VehicleStatus.ACTIVE;
+      vehicle.nodeList = undefined;
+      vehicle = await this.dataSource.getRepository(Vehicle).save(vehicle);
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     return vehicle;
@@ -42,17 +50,21 @@ export class VehicleService {
 
   async registerVehicle(registerAgentDTO: RegisterAgentDTO): Promise<Vehicle> {
     const { macAddress, model: modelName, certKey, name } = registerAgentDTO;
-    let vehicle = await this.databaseService.getOneByField(Vehicle, 'certKey', certKey);
+    let vehicle = await this.dataSource.getRepository(Vehicle).findOne({
+      where: { certKey }
+    });
     if (vehicle) {
       vehicle.isOnline = true;
       vehicle.lastConnected = new Date();
-      vehicle = await this.databaseService.save(Vehicle, vehicle);
+      vehicle = await this.dataSource.getRepository(Vehicle).save(vehicle);
       return vehicle;
     }
-    let model = await this.databaseService.getOneByField(Model, 'name', modelName);
+    let model = await this.dataSource.getRepository(Model).findOne({
+      where: { name: modelName }
+    });
 
     if (!model) {
-      model = await this.databaseService.save(Model, { name: modelName } as Model);
+      model = await this.dataSource.getRepository(Model).save(new Model(modelName));
     }
 
     vehicle = new Vehicle();
@@ -63,24 +75,16 @@ export class VehicleService {
     vehicle.isOnline = true;
     vehicle.lastConnected = new Date();
 
-    vehicle = await this.databaseService.save(Vehicle, vehicle);
+    vehicle = await this.dataSource.getRepository(Vehicle).save(vehicle);
     return vehicle;
   }
 
-  async activeVehicle(certKey: string): Promise<Vehicle> {
-    const vehicle = await this.databaseService.getOneByField(Vehicle, 'certKey', certKey);
-    if (!vehicle || vehicle.status !== VehicleStatus.WAITING) {
-      return null;
-    }
-
-    vehicle.status = VehicleStatus.ACTIVE;
-    vehicle.lastConnected = new Date();
-    return await this.databaseService.save<Vehicle>(Vehicle, vehicle);
-  }
-
-  async getVehicleByField(field: keyof Vehicle, value: any): Promise<Vehicle> {
-    return await this.dataSource.getRepository(Vehicle).findOne({
-      where: { [field]: value },
+  async getWaitingOnlineVehicles(): Promise<Vehicle[]> {
+    return await this.dataSource.getRepository(Vehicle).find({
+      where: {
+        status: VehicleStatus.WAITING,
+        isOnline: true
+      },
       loadEagerRelations: true
     });
   }
@@ -95,7 +99,7 @@ export class VehicleService {
     });
   }
 
-  async getExistedVehicle(id: number): Promise<Vehicle> {
+  async getVehicle(id: number): Promise<Vehicle> {
     const vehicle = await this.dataSource.getRepository(Vehicle).findOne({
       where: { id },
       relations: ['nodeList', 'nodeList.rosNode']
@@ -106,26 +110,7 @@ export class VehicleService {
     return vehicle;
   }
 
-  async checkResponseFromVehicle(resultFromVehicle: any[] | { error: string }[], vehicle: Vehicle) {
-    if (Array.isArray(resultFromVehicle) && resultFromVehicle.length <= 0) {
-      vehicle.isOnline = false;
-      vehicle.nodeList = undefined;
-      await this.dataSource.getRepository(Vehicle).save(vehicle);
-      throw message.agentIsOffline;
-    }
-
-    const error = [];
-    resultFromVehicle.forEach((r) => {
-      if (r.error) {
-        error.push(r.error);
-      }
-    });
-    if (error.length > 0) {
-      throw { error };
-    }
-  }
-
-  async handlevehicleDisconnection(certKey: string): Promise<void> {
+  async handleVehicleDisconnection(certKey: string): Promise<void> {
     const vehicle = await this.dataSource.getRepository(Vehicle).findOne({
       where: {
         certKey
@@ -137,60 +122,114 @@ export class VehicleService {
     }
   }
 
+  async handleVehicleConnection(certKey: string): Promise<boolean> {
+    const vehicle = await this.dataSource.getRepository(Vehicle).findOne({
+      where: {
+        certKey
+      }
+    });
+    if (vehicle) {
+      vehicle.isOnline = true;
+      vehicle.lastConnected = new Date();
+      await this.dataSource.getRepository(Vehicle).save(vehicle);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  async sendROSMasterCommand(vehicleId: number) {
+    const vehicle = await this.getVehicle(vehicleId);
+    try {
+      return await this.getResultFromAgent(vehicle, SocketEventEnum.RUN_ROS_MASTER, {});
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+  }
+
+  async sendROSNodesForRunning(vehicleId: number, rosNodesForRunningDTO: ROSNodesForRunningDTO) {
+    const vehicle = await this.getVehicle(vehicleId);
+    const rosNodes = rosNodesForRunningDTO.nodeIds.map((id) => {
+      const node = vehicle.nodeList.find((node) => node.rosNode.id === id);
+      if (!node) {
+        throw new HttpException(message.rosNodeNotFound, HttpStatus.NOT_FOUND);
+      }
+      return node.rosNode;
+    });
+    if (!rosNodes) {
+      throw new HttpException(message.rosNodeNotFound, HttpStatus.NOT_FOUND);
+    }
+    try {
+      return await this.getResultFromAgent(vehicle, SocketEventEnum.RUN_ROS_NODE, {
+        nodeArr: rosNodes.map((node) => ({ name: node.name, packageName: node.packageName }))
+      });
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+  }
+
+  async getResultFromAgent(vehicle: Vehicle, event: string, data: any): Promise<ISuccessResponse> {
+    const resultFromAgent = (await this.agentGateway.emitToRoom(
+      event,
+      `${SocketEnum.ROOM_PREFIX}${vehicle.certKey}`,
+      data
+    )) as IResponse;
+
+    if (resultFromAgent.status === 'error') {
+      throw resultFromAgent.message;
+    } else if (resultFromAgent.status !== 'success') {
+      vehicle.isOnline = false;
+      vehicle.nodeList = undefined;
+      await this.dataSource.getRepository(Vehicle).save(vehicle);
+      throw message.agentIsOffline;
+    }
+
+    return resultFromAgent as ISuccessResponse;
+  }
+
   async sendLaunchFileForRunning(
     vehicleId: number,
     launchFileFoRunningDTO: LaunchFileForRunningDTO
   ) {
-    const vehicle = await this.getExistedVehicle(vehicleId);
+    const vehicle = await this.getVehicle(vehicleId);
     const { names: fileNames } = launchFileFoRunningDTO;
-    const resultFromVehicle = (await this.vehicleGateway.emitToRoom(
-      SocketEnum.EVENT_RUN_INTERFACE,
-      `${SocketEnum.ROOM_PREFIX}${vehicle.certKey}`,
-      {
-        fileNames
-      }
-    )) as any[] | { error: string }[];
     try {
-      await this.checkResponseFromVehicle(resultFromVehicle, vehicle);
+      return await this.getResultFromAgent(vehicle, SocketEventEnum.RUN_INTERFACE, {
+        fileNames
+      });
     } catch (err) {
       throw new HttpException(err, HttpStatus.SERVICE_UNAVAILABLE);
     }
-    return resultFromVehicle;
   }
 
   async getLaunchFileStatus(vehicleId: number) {
-    const vehicle = await this.getExistedVehicle(vehicleId);
-    const resultFromVehicle = (await this.vehicleGateway.emitToRoom(
-      SocketEnum.EVENT_GET_LAUNCH_FILE_STATUS,
-      `${SocketEnum.ROOM_PREFIX}${vehicle.certKey}`,
-      {}
-    )) as any[];
+    const vehicle = await this.getVehicle(vehicleId);
+    let resultFromAgent: ISuccessResponse;
     try {
-      await this.checkResponseFromVehicle(resultFromVehicle, vehicle);
+      resultFromAgent = await this.getResultFromAgent(
+        vehicle,
+        SocketEventEnum.GET_INTERFACE_STATUS,
+        {}
+      );
     } catch (err) {
       return [];
     }
-    return resultFromVehicle.reduce((acc, cur) => [...acc, ...cur], []);
+
+    return resultFromAgent.data;
   }
 
   async sendLaunchFileForStopping(
     vehicleId: number,
     launchFileForStoppingDTO: LaunchFileForStoppingDTO
   ) {
-    const vehicle = await this.getExistedVehicle(vehicleId);
+    const vehicle = await this.getVehicle(vehicleId);
     const { names: fileNames } = launchFileForStoppingDTO;
-    const resultFromVehicle = (await this.vehicleGateway.emitToRoom(
-      SocketEnum.EVENT_STOP_INTERFACE,
-      `${SocketEnum.ROOM_PREFIX}${vehicle.certKey}`,
-      {
-        fileNames
-      }
-    )) as any[] | { error: string }[];
     try {
-      await this.checkResponseFromVehicle(resultFromVehicle, vehicle);
+      return await this.getResultFromAgent(vehicle, SocketEventEnum.STOP_INTERFACE, {
+        fileNames
+      });
     } catch (err) {
       throw new HttpException(err, HttpStatus.SERVICE_UNAVAILABLE);
     }
-    return resultFromVehicle;
   }
 }

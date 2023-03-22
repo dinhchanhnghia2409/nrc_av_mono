@@ -9,4 +9,9 @@ export class Model extends BaseModel {
 
   @OneToMany(() => Vehicle, (vehicle) => vehicle.model)
   vehicles: Vehicle[];
+
+  constructor(name: string) {
+    super();
+    this.name = name;
+  }
 }
