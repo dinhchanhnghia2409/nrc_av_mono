@@ -11,8 +11,8 @@ import {
   ISuccessResponse,
   SocketEventEnum
 } from '../core';
-import { LaunchFileForRunningDTO } from './dto/launchFileForRunning.request.dto';
-import { LaunchFileForStoppingDTO } from './dto/launchFileForStopping.request.dto';
+import { InterfaceFilesForRunningDTO } from './dto/interfaceFilesForRunning.request.dto';
+import { InterfaceFilesForStoppingDTO } from './dto/interfaceFilesForStopping.request.dto';
 import { RegisterAgentDTO } from './dto/registerAgent.dto';
 import { ROSNodesForRunningDTO } from './dto/rosNodeForRunning.request.dto';
 
@@ -187,12 +187,12 @@ export class VehicleService {
     return resultFromAgent as ISuccessResponse;
   }
 
-  async sendLaunchFileForRunning(
+  async startInterfaceFiles(
     vehicleId: number,
-    launchFileFoRunningDTO: LaunchFileForRunningDTO
+    interfaceFilesFoRunningDTO: InterfaceFilesForRunningDTO
   ) {
     const vehicle = await this.getVehicle(vehicleId);
-    const { names: fileNames } = launchFileFoRunningDTO;
+    const { interfaceNames: fileNames } = interfaceFilesFoRunningDTO;
     try {
       return await this.getResultFromAgent(vehicle, SocketEventEnum.RUN_INTERFACE, {
         fileNames
@@ -202,7 +202,7 @@ export class VehicleService {
     }
   }
 
-  async getLaunchFileStatus(vehicleId: number) {
+  async getInterfaceFilesStatus(vehicleId: number) {
     const vehicle = await this.getVehicle(vehicleId);
     let resultFromAgent: ISuccessResponse;
     try {
@@ -218,12 +218,12 @@ export class VehicleService {
     return resultFromAgent.data;
   }
 
-  async sendLaunchFileForStopping(
+  async stopInterfaceFiles(
     vehicleId: number,
-    launchFileForStoppingDTO: LaunchFileForStoppingDTO
+    interfaceFilesStoppingDTO: InterfaceFilesForStoppingDTO
   ) {
     const vehicle = await this.getVehicle(vehicleId);
-    const { names: fileNames } = launchFileForStoppingDTO;
+    const { interfaceNames: fileNames } = interfaceFilesStoppingDTO;
     try {
       return await this.getResultFromAgent(vehicle, SocketEventEnum.STOP_INTERFACE, {
         fileNames

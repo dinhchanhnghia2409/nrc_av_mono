@@ -22,13 +22,13 @@ import {
 } from '../rosNode/dto/rosNodesCreation.request.dto';
 import { ROSNodeService } from '../rosNode/rosNode.service';
 import {
-  LaunchFileForRunningDTO,
-  vLaunchFileForRunningDTO
-} from './dto/launchFileForRunning.request.dto';
+  InterfaceFilesForRunningDTO,
+  vInterfaceFilesForRunningDTO
+} from './dto/interfaceFilesForRunning.request.dto';
 import {
-  LaunchFileForStoppingDTO,
-  vLaunchFileForStoppingDTO
-} from './dto/launchFileForStopping.request.dto';
+  InterfaceFilesForStoppingDTO,
+  vInterfaceFilesForStoppingDTO
+} from './dto/interfaceFilesForStopping.request.dto';
 import { ROSNodesForRunningDTO, vROSNodesForRunningDTO } from './dto/rosNodeForRunning.request.dto';
 import { VehicleService } from './vehicle.service';
 
@@ -58,17 +58,17 @@ export class VehicleController {
     return res.status(HttpStatus.OK).send(await this.vehicleService.getVehicle(id));
   }
 
-  @Get(':id/ROS-nodes')
+  @Get(':id/ros-nodes')
   async getVehicleNodes(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
     return res.status(HttpStatus.OK).send(await this.rosNodeService.getVehicleROSNodes(id));
   }
 
-  @Get('/:id/ROS-nodes/sync')
+  @Get('/:id/ros-nodes/sync')
   async syncVehicleNodes(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
     return res.status(HttpStatus.OK).send(await this.rosNodeService.syncVehicleNodes(id));
   }
 
-  @Get('/:id/ROS-nodes/status')
+  @Get('/:id/ros-nodes/status')
   async getVehicleROSNodesStatus(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
     return res.send(await this.rosNodeService.getROSNodeStatus(id));
   }
@@ -78,12 +78,12 @@ export class VehicleController {
     return res.status(HttpStatus.OK).send(await this.vehicleService.activateVehicle(id));
   }
 
-  @Get('/:id/launch-file/status')
-  async getVehicleLaunchFileStatus(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
-    return res.send(await this.vehicleService.getLaunchFileStatus(id));
+  @Get('/:id/interface-files/status')
+  async getVehiclInterfaceFilesStatus(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
+    return res.send(await this.vehicleService.getInterfaceFilesStatus(id));
   }
 
-  @Post('/:id/ROS-nodes')
+  @Post('/:id/ros-nodes')
   @UsePipes(new HttpJoiValidatorPipe(vROSNodesCreationDTO))
   async updateVehicleNodes(
     @Param('id', ParseIntPipe) id: number,
@@ -93,13 +93,13 @@ export class VehicleController {
     return res.status(HttpStatus.OK).send(await this.rosNodeService.updateVehicleNodes(id, body));
   }
 
-  @Post('/:id/ROS-master-execution')
+  @Post('/:id/execution/ros-core')
   async runROSmaster(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
     const result = await this.vehicleService.sendROSMasterCommand(id);
     return res.status(HttpStatus.OK).send(result);
   }
 
-  @Post('/:vehicleId/ROS-node-execution')
+  @Post('/:vehicleId/execution/ros-nodes')
   @UsePipes(new HttpJoiValidatorPipe(vROSNodesForRunningDTO))
   async runROSnode(
     @Param('vehicleId', ParseIntPipe) vehicleId: number,
@@ -110,27 +110,23 @@ export class VehicleController {
     return res.status(HttpStatus.OK).send(result);
   }
 
-  @Post('/:id/launch-file')
-  @UsePipes(new HttpJoiValidatorPipe(vLaunchFileForRunningDTO))
-  async sendLaunchFileForRunning(
+  @Post('/:id/execution/interface-files')
+  @UsePipes(new HttpJoiValidatorPipe(vInterfaceFilesForRunningDTO))
+  async startInterfaceFiles(
     @Param('id', ParseIntPipe) id: number,
     @Res() res: Response,
-    @Body() body: LaunchFileForRunningDTO
+    @Body() body: InterfaceFilesForRunningDTO
   ) {
-    return res
-      .status(HttpStatus.OK)
-      .send(await this.vehicleService.sendLaunchFileForRunning(id, body));
+    return res.status(HttpStatus.OK).send(await this.vehicleService.startInterfaceFiles(id, body));
   }
 
-  @Post('/:id/launch-file-termination')
-  @UsePipes(new HttpJoiValidatorPipe(vLaunchFileForStoppingDTO))
-  async stopLaunchFile(
+  @Post('/:id/termination/interface-files')
+  @UsePipes(new HttpJoiValidatorPipe(vInterfaceFilesForStoppingDTO))
+  async stopInterfaceFiles(
     @Param('id', ParseIntPipe) id: number,
     @Res() res: Response,
-    @Body() body: LaunchFileForStoppingDTO
+    @Body() body: InterfaceFilesForStoppingDTO
   ) {
-    return res
-      .status(HttpStatus.OK)
-      .send(await this.vehicleService.sendLaunchFileForStopping(id, body));
+    return res.status(HttpStatus.OK).send(await this.vehicleService.stopInterfaceFiles(id, body));
   }
 }

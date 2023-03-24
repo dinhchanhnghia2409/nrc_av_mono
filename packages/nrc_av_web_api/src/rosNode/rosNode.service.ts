@@ -114,15 +114,23 @@ export class ROSNodeService {
   async getROSNodeStatusByVehicle(vehicle: Vehicle): Promise<ROSNodeStatusResponseDTO[]> {
     let resultFromAgent: ISuccessResponse;
     try {
+      const rosNodes = vehicle.nodeList
+        .filter((nodeList) => !nodeList.isDeleted)
+        .map((nodeList) => ({
+          name: nodeList.rosNode.name,
+          packageName: nodeList.rosNode.packageName
+        }));
+
+      // add ROSCore to check status
+      rosNodes.push({
+        name: 'rosout',
+        packageName: undefined
+      });
+
       resultFromAgent = await this.vehicleService.getResultFromAgent(
         vehicle,
         SocketEventEnum.GET_STATUS_ROS_NODES,
-        vehicle.nodeList
-          .filter((nodeList) => !nodeList.isDeleted)
-          .map((nodeList) => ({
-            name: nodeList.rosNode.name,
-            packageName: nodeList.rosNode.packageName
-          }))
+        rosNodes
       );
     } catch (err) {
       throw new HttpException(err, HttpStatus.SERVICE_UNAVAILABLE);
