@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule/dist';
 import { AgentModule } from './agent/agent.module';
 import { AuthModule } from './auth/auth.module';
@@ -19,7 +20,8 @@ import { VehicleModule } from './vehicle/vehicle.module';
     DbModule,
     VehicleModule,
     AuthModule,
-    UserModule
+    UserModule,
+    EventEmitterModule.forRoot()
   ]
 })
 export class AppModule {}

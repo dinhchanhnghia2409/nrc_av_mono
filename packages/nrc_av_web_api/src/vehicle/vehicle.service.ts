@@ -1,4 +1,5 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { DataSource } from 'typeorm';
 import { AgentGateway } from '../agent/agent.gateway';
 import {
@@ -9,7 +10,9 @@ import {
   SocketEnum,
   IResponse,
   ISuccessResponse,
-  SocketEventEnum
+  IVehicleStatus,
+  SocketEventEnum,
+  EventEmitterNameSpace
 } from '../core';
 import { InterfaceFilesForRunningDTO } from './dto/interfaceFilesForRunning.request.dto';
 import { InterfaceFilesForStoppingDTO } from './dto/interfaceFilesForStopping.request.dto';
@@ -20,7 +23,8 @@ import { ROSNodesForRunningDTO } from './dto/rosNodeForRunning.request.dto';
 export class VehicleService {
   constructor(
     private readonly dataSource: DataSource,
-    private readonly agentGateway: AgentGateway
+    private readonly agentGateway: AgentGateway,
+    private eventEmitter: EventEmitter2
   ) {}
 
   async activateVehicle(id: number): Promise<Vehicle> {
@@ -41,6 +45,11 @@ export class VehicleService {
       vehicle.status = VehicleStatus.ACTIVE;
       vehicle.nodeList = undefined;
       vehicle = await this.dataSource.getRepository(Vehicle).save(vehicle);
+      const vehicleStatusEvent: IVehicleStatus = {
+        vehicleCertKey: vehicle.certKey,
+        status: vehicle.status
+      };
+      this.eventEmitter.emit(EventEmitterNameSpace.VEHICLE_STATUS, vehicleStatusEvent);
     } catch (err) {
       throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -110,6 +119,16 @@ export class VehicleService {
     return vehicle;
   }
 
+  async getVehicleOnCertKey(certKey: string): Promise<Vehicle> {
+    const vehicle = await this.dataSource.getRepository(Vehicle).findOne({
+      where: { certKey }
+    });
+    if (!vehicle) {
+      throw new HttpException(message.vehicleNotFound, HttpStatus.NOT_FOUND);
+    }
+    return vehicle;
+  }
+
   async handleVehicleDisconnection(certKey: string): Promise<void> {
     const vehicle = await this.dataSource.getRepository(Vehicle).findOne({
       where: {
@@ -122,7 +141,7 @@ export class VehicleService {
     }
   }
 
-  async handleVehicleConnection(certKey: string): Promise<boolean> {
+  async handleVehicleConnection(certKey: string): Promise<Vehicle> {
     const vehicle = await this.dataSource.getRepository(Vehicle).findOne({
       where: {
         certKey
@@ -132,9 +151,9 @@ export class VehicleService {
       vehicle.isOnline = true;
       vehicle.lastConnected = new Date();
       await this.dataSource.getRepository(Vehicle).save(vehicle);
-      return true;
+      return vehicle;
     } else {
-      return false;
+      return null;
     }
   }
 
@@ -183,7 +202,11 @@ export class VehicleService {
       await this.dataSource.getRepository(Vehicle).save(vehicle);
       throw message.agentIsOffline;
     }
-
+    const vehicleStatusEvent: IVehicleStatus = {
+      vehicleCertKey: vehicle.certKey,
+      status: vehicle.status
+    };
+    this.eventEmitter.emit(EventEmitterNameSpace.VEHICLE_STATUS, vehicleStatusEvent);
     return resultFromAgent as ISuccessResponse;
   }
 

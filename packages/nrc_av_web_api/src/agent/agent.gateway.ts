@@ -1,4 +1,5 @@
 import { UsePipes, ValidationPipe, forwardRef, Inject } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import {
   ConnectedSocket,
   SubscribeMessage,
@@ -9,9 +10,16 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { REQUEST_TIMEOUT } from '../constants';
-import { IResponse, SocketEnum, SocketEventEnum } from '../core';
+import {
+  EventEmitterNameSpace,
+  IResponse,
+  IVehicleStatus,
+  SocketEnum,
+  SocketEventEnum
+} from '../core';
 import { RegisterAgentDTO } from '../vehicle/dto/registerAgent.dto';
 import { VehicleService } from '../vehicle/vehicle.service';
+import { VehicleStatus } from './../core/enums/enum';
 
 @WebSocketGateway({
   namespace: 'nissan'
@@ -56,11 +64,21 @@ export class AgentGateway {
 
   async handleConnection(client: any) {
     const clientKey = client.handshake.headers.certkey;
-    const isRegistered = await this.vehicleService.handleVehicleConnection(clientKey);
-    if (isRegistered) {
+    const vehicle = await this.vehicleService.handleVehicleConnection(clientKey);
+    if (vehicle) {
       client.join(`${SocketEnum.ROOM_PREFIX}${clientKey}`);
+      this.emitToRoom(
+        SocketEventEnum.VEHICLE_STATUS,
+        `${SocketEnum.ROOM_PREFIX}${clientKey}`,
+        vehicle.status
+      );
     } else {
       this.emitToClient(SocketEventEnum.REGISTRATION_REQUEST, client.id);
+      this.emitToClient(
+        SocketEventEnum.VEHICLE_STATUS,
+        `${SocketEnum.ROOM_PREFIX}${clientKey}`,
+        VehicleStatus.WAITING
+      );
     }
     // eslint-disable-next-line no-console
     console.log('connected', client.id);
@@ -70,6 +88,15 @@ export class AgentGateway {
     // eslint-disable-next-line no-console
     console.log('disconnected', client.id);
     await this.vehicleService.handleVehicleDisconnection(client.handshake.headers.certkey);
+  }
+
+  @OnEvent(EventEmitterNameSpace.VEHICLE_STATUS)
+  handleVehicleStatus(payload: IVehicleStatus) {
+    this.emitToRoom(
+      SocketEventEnum.VEHICLE_STATUS,
+      `${SocketEnum.ROOM_PREFIX}${payload.vehicleCertKey}`,
+      payload.status
+    );
   }
 
   @UsePipes(
@@ -89,5 +116,25 @@ export class AgentGateway {
     await this.vehicleService.getResultFromAgent(vehicle, SocketEventEnum.REGISTRATION_RESPONSE, {
       certKey: vehicle.certKey
     });
+  }
+
+  @UsePipes(
+    new ValidationPipe({
+      enableDebugMessages: true,
+      transform: true,
+      exceptionFactory(errors) {
+        throw new WsException(errors);
+      }
+    })
+  )
+  @SubscribeMessage(SocketEventEnum.VEHICLE_STATUS)
+  async onStatusRequestEvent(@ConnectedSocket() client: Socket) {
+    const clientKey = client.handshake.headers.certkey as string;
+    const vehicle = await this.vehicleService.getVehicleOnCertKey(clientKey);
+    await this.emitToRoom(
+      SocketEventEnum.VEHICLE_STATUS,
+      `${SocketEnum.ROOM_PREFIX}${clientKey}`,
+      vehicle.status
+    );
   }
 }
