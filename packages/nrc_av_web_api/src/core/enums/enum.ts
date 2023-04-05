@@ -17,7 +17,6 @@ export enum SocketEventEnum {
   REGISTRATION_REQUEST = 'nissan/vehicle/registration-request',
   VEHICLE_REGISTRATION = 'nissan/vehicle/registration',
   REGISTRATION_RESPONSE = 'nissan/vehicle/registration-response',
-  VEHICLE_ACTIVATION = 'nissan/vehicle/activation',
   VEHICLE_STATUS = 'nissan/vehicle/status',
 
   RUN_ROS_MASTER = 'nissan/ros/master',

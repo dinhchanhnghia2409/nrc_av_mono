@@ -62,32 +62,44 @@ export class AgentGateway {
     });
   }
 
-  async handleConnection(client: any) {
-    const clientKey = client.handshake.headers.certkey;
+  async handleConnection(client: Socket) {
+    // eslint-disable-next-line no-console
+    console.log('connected', client.id);
+
+    const clientKey = client.handshake.headers.certkey as string;
     const vehicle = await this.vehicleService.handleVehicleConnection(clientKey);
     if (vehicle) {
       client.join(`${SocketEnum.ROOM_PREFIX}${clientKey}`);
+
       this.emitToRoom(
         SocketEventEnum.VEHICLE_STATUS,
         `${SocketEnum.ROOM_PREFIX}${clientKey}`,
         vehicle.status
-      );
+      ).catch((e) => {
+        console.error(`[handleConnection] Emit VEHICLE_STATUS failed with error: ${e}`);
+      });
     } else {
-      this.emitToClient(SocketEventEnum.REGISTRATION_REQUEST, client.id);
+      this.emitToClient(SocketEventEnum.REGISTRATION_REQUEST, client.id).catch((e) => {
+        console.error(`[handleConnection] Emit REGISTRATION_REQUEST failed with error: ${e}`);
+      });
+
       this.emitToClient(
         SocketEventEnum.VEHICLE_STATUS,
         `${SocketEnum.ROOM_PREFIX}${clientKey}`,
         VehicleStatus.WAITING
-      );
+      ).catch((e) => {
+        console.error(`[handleConnection] Emit VEHICLE_STATUS failed with error: ${e}`);
+      });
     }
-    // eslint-disable-next-line no-console
-    console.log('connected', client.id);
   }
 
-  async handleDisconnect(client: any) {
+  async handleDisconnect(client: Socket) {
     // eslint-disable-next-line no-console
     console.log('disconnected', client.id);
-    await this.vehicleService.handleVehicleDisconnection(client.handshake.headers.certkey);
+
+    await this.vehicleService.handleVehicleDisconnection(
+      client.handshake.headers.certkey as string
+    );
   }
 
   @OnEvent(EventEmitterNameSpace.VEHICLE_STATUS)
@@ -96,7 +108,9 @@ export class AgentGateway {
       SocketEventEnum.VEHICLE_STATUS,
       `${SocketEnum.ROOM_PREFIX}${payload.vehicleCertKey}`,
       payload.status
-    );
+    ).catch((e) => {
+      console.error(`[EventEmitterNameSpace.VEHICLE_STATUS] failed with error: ${e}`);
+    });
   }
 
   @UsePipes(
@@ -113,9 +127,13 @@ export class AgentGateway {
     client.join(`${SocketEnum.ROOM_PREFIX}${data?.certKey}`);
 
     const vehicle = await this.vehicleService.registerVehicle(data);
-    await this.vehicleService.getResultFromAgent(vehicle, SocketEventEnum.REGISTRATION_RESPONSE, {
-      certKey: vehicle.certKey
-    });
+    try {
+      await this.vehicleService.getResultFromAgent(vehicle, SocketEventEnum.REGISTRATION_RESPONSE, {
+        certKey: vehicle.certKey
+      });
+    } catch (e) {
+      console.error(`[SocketEventEnum.VEHICLE_REGISTRATION] failed with error: ${e}`);
+    }
   }
 
   @UsePipes(
@@ -129,12 +147,16 @@ export class AgentGateway {
   )
   @SubscribeMessage(SocketEventEnum.VEHICLE_STATUS)
   async onStatusRequestEvent(@ConnectedSocket() client: Socket) {
-    const clientKey = client.handshake.headers.certkey as string;
-    const vehicle = await this.vehicleService.getVehicleOnCertKey(clientKey);
-    await this.emitToRoom(
-      SocketEventEnum.VEHICLE_STATUS,
-      `${SocketEnum.ROOM_PREFIX}${clientKey}`,
-      vehicle.status
-    );
+    try {
+      const clientKey = client.handshake.headers.certkey as string;
+      const vehicle = await this.vehicleService.getVehicleOnCertKey(clientKey);
+      await this.emitToRoom(
+        SocketEventEnum.VEHICLE_STATUS,
+        `${SocketEnum.ROOM_PREFIX}${clientKey}`,
+        vehicle.status
+      );
+    } catch (e) {
+      console.error(`[SocketEventEnum.VEHICLE_STATUS] failed with error: ${e}`);
+    }
   }
 }

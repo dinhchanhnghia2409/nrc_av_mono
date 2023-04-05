@@ -34,14 +34,6 @@ export class VehicleService {
     }
 
     try {
-      await this.getResultFromAgent(vehicle, SocketEventEnum.VEHICLE_ACTIVATION, {
-        certKey: vehicle.certKey
-      });
-    } catch (err) {
-      throw new HttpException(err, HttpStatus.SERVICE_UNAVAILABLE);
-    }
-
-    try {
       vehicle.status = VehicleStatus.ACTIVE;
       vehicle.nodeList = undefined;
       vehicle = await this.dataSource.getRepository(Vehicle).save(vehicle);
