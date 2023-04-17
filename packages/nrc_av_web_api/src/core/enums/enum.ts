@@ -18,6 +18,7 @@ export enum SocketEventEnum {
   VEHICLE_REGISTRATION = 'nissan/vehicle/registration',
   REGISTRATION_RESPONSE = 'nissan/vehicle/registration-response',
   VEHICLE_STATUS = 'nissan/vehicle/status',
+  GET_INTERFACE_DETAIL_STATUS = 'nissan/vehicle/interface/detail/status',
 
   RUN_ROS_MASTER = 'nissan/ros/master',
   RUN_ROS_NODE = 'nissan/ros/node',
@@ -30,5 +31,6 @@ export enum SocketEventEnum {
 }
 
 export enum EventEmitterNameSpace {
-  VEHICLE_STATUS = 'vehicle.status'
+  VEHICLE_STATUS = 'vehicle.status',
+  VEHICLE_INTERFACE_DETAIL_STATUS = 'vehicle.interface.detail.status'
 }

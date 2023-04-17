@@ -1,5 +1,5 @@
 import { UsePipes, ValidationPipe, forwardRef, Inject } from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import {
   ConnectedSocket,
   SubscribeMessage,
@@ -17,9 +17,12 @@ import {
   SocketEnum,
   SocketEventEnum
 } from '../core';
+import { InterfaceService } from '../interface/interface.service';
 import { RegisterAgentDTO } from '../vehicle/dto/registerAgent.dto';
 import { VehicleService } from '../vehicle/vehicle.service';
 import { VehicleStatus } from './../core/enums/enum';
+import { InterfaceDetailStatusDTO } from './dto/interfaceDetailStatus.res.dto';
+import { InterfaceInformationDTO } from './dto/interfaceInformation.res.dto';
 
 @WebSocketGateway({
   namespace: 'nissan'
@@ -27,7 +30,9 @@ import { VehicleStatus } from './../core/enums/enum';
 export class AgentGateway {
   constructor(
     @Inject(forwardRef(() => VehicleService))
-    private readonly vehicleService: VehicleService
+    private readonly vehicleService: VehicleService,
+    private readonly eventEmitter: EventEmitter2,
+    private readonly interfaceService: InterfaceService
   ) {}
   @WebSocketServer()
   server: Server;
@@ -158,5 +163,32 @@ export class AgentGateway {
     } catch (e) {
       console.error(`[SocketEventEnum.VEHICLE_STATUS] failed with error: ${e}`);
     }
+  }
+
+  @UsePipes(
+    new ValidationPipe({
+      enableDebugMessages: true,
+      transform: true,
+      exceptionFactory(errors) {
+        throw new WsException(errors);
+      }
+    })
+  )
+  @SubscribeMessage(SocketEventEnum.GET_INTERFACE_DETAIL_STATUS)
+  async onGetInterfaceDetailStatus(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: InterfaceDetailStatusDTO
+  ) {
+    const clientKey = client.handshake.headers.certkey as string;
+    const vehicle = await this.vehicleService.getVehicleOnCertKey(clientKey);
+    const { interfaceName, algorithms, machines, sensors } = data;
+    const agentInterface = await this.interfaceService.getInterfaceByName(interfaceName);
+    if (!agentInterface) {
+      return;
+    }
+    this.eventEmitter.emit(
+      EventEmitterNameSpace.VEHICLE_INTERFACE_DETAIL_STATUS,
+      new InterfaceInformationDTO(vehicle.id, agentInterface.id, machines, algorithms, sensors)
+    );
   }
 }

@@ -2,7 +2,7 @@ import { HttpException, Injectable, PipeTransform, HttpStatus } from '@nestjs/co
 import { ObjectSchema, ValidationError } from 'joi';
 
 @Injectable()
-export class HttpJoiValidatorPipe implements PipeTransform {
+export class HttpBodyValidatorPipe implements PipeTransform {
   constructor(private readonly schema: ObjectSchema) {}
 
   private mapJoiError(error: ValidationError) {

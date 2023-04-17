@@ -14,6 +14,7 @@ import {
   SocketEventEnum,
   EventEmitterNameSpace
 } from '../core';
+import { InterfaceService } from '../interface/interface.service';
 import { InterfaceFilesForRunningDTO } from './dto/interfaceFilesForRunning.request.dto';
 import { InterfaceFilesForStoppingDTO } from './dto/interfaceFilesForStopping.request.dto';
 import { RegisterAgentDTO } from './dto/registerAgent.dto';
@@ -24,15 +25,12 @@ export class VehicleService {
   constructor(
     private readonly dataSource: DataSource,
     private readonly agentGateway: AgentGateway,
-    private eventEmitter: EventEmitter2
+    private eventEmitter: EventEmitter2,
+    private readonly interfaceService: InterfaceService
   ) {}
 
   async activateVehicle(id: number): Promise<Vehicle> {
-    let vehicle = await this.getVehicle(id);
-    if (vehicle.status !== VehicleStatus.WAITING) {
-      throw new HttpException(message.invalidStatus, HttpStatus.BAD_REQUEST);
-    }
-
+    let vehicle = await this.getVehicle(id, VehicleStatus.WAITING);
     try {
       vehicle.status = VehicleStatus.ACTIVE;
       vehicle.nodeList = undefined;
@@ -100,13 +98,16 @@ export class VehicleService {
     });
   }
 
-  async getVehicle(id: number): Promise<Vehicle> {
+  async getVehicle(id: number, acceptedStatus = VehicleStatus.ACTIVE): Promise<Vehicle> {
     const vehicle = await this.dataSource.getRepository(Vehicle).findOne({
       where: { id },
       relations: ['nodeList', 'nodeList.rosNode']
     });
     if (!vehicle) {
       throw new HttpException(message.vehicleNotFound, HttpStatus.NOT_FOUND);
+    }
+    if (vehicle.status !== acceptedStatus) {
+      throw new HttpException(message.invalidStatus, HttpStatus.BAD_REQUEST);
     }
     return vehicle;
   }
@@ -199,7 +200,7 @@ export class VehicleService {
       status: vehicle.status
     };
     this.eventEmitter.emit(EventEmitterNameSpace.VEHICLE_STATUS, vehicleStatusEvent);
-    return resultFromAgent as ISuccessResponse;
+    return resultFromAgent;
   }
 
   async startInterfaceFiles(
@@ -208,9 +209,14 @@ export class VehicleService {
   ) {
     const vehicle = await this.getVehicle(vehicleId);
     const { interfaceNames: fileNames } = interfaceFilesFoRunningDTO;
+    const interfaces = await this.interfaceService.getInterfacesWithAllRelationsByNames(fileNames);
+    if (!interfaces?.length) {
+      throw new HttpException(message.interfaceNotFound, HttpStatus.NOT_FOUND);
+    }
+
     try {
       return await this.getResultFromAgent(vehicle, SocketEventEnum.RUN_INTERFACE, {
-        fileNames
+        interfaces
       });
     } catch (err) {
       throw new HttpException(err, HttpStatus.SERVICE_UNAVAILABLE);
@@ -227,10 +233,30 @@ export class VehicleService {
         {}
       );
     } catch (err) {
-      return [];
+      throw new HttpException(err, HttpStatus.SERVICE_UNAVAILABLE);
     }
 
-    return resultFromAgent.data;
+    try {
+      const interfaceNamesForQuering = resultFromAgent.data.map(
+        (interfaceFile: { fileName: string; status: string }) => interfaceFile.fileName
+      );
+      const interfaces = await this.interfaceService.getInterfaceByNames(interfaceNamesForQuering);
+      return resultFromAgent.data.map((interfaceFile: { fileName: string; status: string }) => {
+        const interfaceFileFromDB = interfaces.find(
+          (interfaceFileFromDB) => interfaceFileFromDB.name === interfaceFile.fileName
+        );
+        if (interfaceFileFromDB) {
+          return {
+            ...interfaceFile,
+            id: interfaceFileFromDB.id
+          };
+        } else {
+          return interfaceFile;
+        }
+      });
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async stopInterfaceFiles(
