@@ -1,4 +1,4 @@
-import { CreateDateColumn, Entity, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, UpdateDateColumn } from 'typeorm';
 
 @Entity()
 export class BaseRelationModel {
@@ -7,4 +7,7 @@ export class BaseRelationModel {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @Column({ default: false })
+  isDeleted: boolean;
 }

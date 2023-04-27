@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToMany } from 'typeorm';
+import { Column, Entity, ManyToOne } from 'typeorm';
 import { BaseModel } from './base';
 import { Interface } from './interface';
 
@@ -22,8 +22,8 @@ export class Command extends BaseModel {
   @Column({ nullable: true })
   autoRecord: boolean;
 
-  @ManyToMany(() => Interface, (agentInterface) => agentInterface.commands)
-  interfaces: Interface[];
+  @ManyToOne(() => Interface, (agentInterface) => agentInterface.commands)
+  interface: Interface;
 
   constructor(
     name: string,

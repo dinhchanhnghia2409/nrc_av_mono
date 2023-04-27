@@ -1,7 +1,7 @@
-import { Column, Entity, ManyToMany, OneToMany } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
 import { BaseModel } from './base';
 import { DestinationList } from './destinationList';
-import { MultiDestination } from './multiDestination';
+import { InterfaceDestination } from './interfaceDestination';
 
 @Entity()
 export class Destination extends BaseModel {
@@ -14,11 +14,11 @@ export class Destination extends BaseModel {
   @Column({ type: 'float' })
   posTh: number;
 
-  @OneToMany(() => DestinationList, (destinationList) => destinationList.destination)
-  destinationList: DestinationList[];
+  @OneToMany(() => InterfaceDestination, (interfaceDestination) => interfaceDestination.destination)
+  interfaceDestination: InterfaceDestination[];
 
-  @ManyToMany(() => MultiDestination, (multiDestination) => multiDestination.destinations)
-  multiDestinations: MultiDestination[];
+  @OneToMany(() => DestinationList, (destinationList) => destinationList.destination)
+  destinationList: DestinationList;
 
   constructor(posX: number, posY: number, posTh: number) {
     super();

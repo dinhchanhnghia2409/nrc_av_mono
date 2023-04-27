@@ -21,8 +21,8 @@ import { InterfaceService } from '../interface/interface.service';
 import { RegisterAgentDTO } from '../vehicle/dto/registerAgent.dto';
 import { VehicleService } from '../vehicle/vehicle.service';
 import { VehicleStatus } from './../core/enums/enum';
-import { InterfaceDetailStatusDTO } from './dto/interfaceDetailStatus.res.dto';
-import { InterfaceInformationDTO } from './dto/interfaceInformation.res.dto';
+import { InterfaceDetailStatusDTO } from './dto/interfaceDetailStatus.dto';
+import { InterfaceInformationDTO } from './dto/interfaceInformation.dto';
 
 @WebSocketGateway({
   namespace: 'nissan'

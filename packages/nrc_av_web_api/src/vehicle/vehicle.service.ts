@@ -15,10 +15,10 @@ import {
   EventEmitterNameSpace
 } from '../core';
 import { InterfaceService } from '../interface/interface.service';
-import { InterfaceFilesForRunningDTO } from './dto/interfaceFilesForRunning.request.dto';
-import { InterfaceFilesForStoppingDTO } from './dto/interfaceFilesForStopping.request.dto';
+import { InterfaceFilesForRunningDTO } from './dto/interfaceFilesForRunning.dto';
+import { InterfaceFilesForStoppingDTO } from './dto/interfaceFilesForStopping.dto';
 import { RegisterAgentDTO } from './dto/registerAgent.dto';
-import { ROSNodesForRunningDTO } from './dto/rosNodeForRunning.request.dto';
+import { ROSNodesForRunningDTO } from './dto/rosNodeForRunning.dto';
 
 @Injectable()
 export class VehicleService {

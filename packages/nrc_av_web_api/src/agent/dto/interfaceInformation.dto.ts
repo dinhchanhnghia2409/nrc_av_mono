@@ -1,6 +1,6 @@
-import { AlgorithmStatusDTO } from './algorithmStatus.res.dto';
-import { MachineStatusDTO } from './machineStatus.res.dto';
-import { SensorStatusDTO } from './sensorStatus.res.dto';
+import { AlgorithmStatusDTO } from './algorithmStatus.dto';
+import { MachineStatusDTO } from './machineStatus.dto';
+import { SensorStatusDTO } from './sensorStatus.dto';
 
 export class InterfaceInformationDTO {
   constructor(

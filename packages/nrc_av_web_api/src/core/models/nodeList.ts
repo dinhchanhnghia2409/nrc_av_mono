@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { BaseRelationModel } from './baseRelation';
 import { ROSNode } from './rosNode';
 import { Vehicle } from './vehicle';
@@ -18,7 +18,4 @@ export class NodeList extends BaseRelationModel {
   @ManyToOne(() => ROSNode, (node) => node.id)
   @JoinColumn({ name: 'rosNode_id' })
   public rosNode: ROSNode;
-
-  @Column({ default: false })
-  isDeleted: boolean;
 }

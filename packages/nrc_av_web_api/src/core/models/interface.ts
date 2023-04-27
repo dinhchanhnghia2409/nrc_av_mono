@@ -1,8 +1,8 @@
-import { Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { Algorithm } from './algorithms';
 import { BaseModel } from './base';
 import { Command } from './command';
-import { DestinationList } from './destinationList';
+import { InterfaceDestination } from './interfaceDestination';
 import { Machine } from './machine';
 import { Model } from './model';
 import { MultiDestination } from './multiDestination';
@@ -10,41 +10,34 @@ import { Sensor } from './sensor';
 
 @Entity()
 export class Interface extends BaseModel {
-  @Column()
+  @Column({ nullable: true })
   name: string;
-
-  @Column()
-  agentName: string;
 
   @ManyToOne(() => Model, (model) => model.interfaces)
   model: Model;
 
-  @ManyToMany(() => Machine, (machine) => machine.interfaces)
-  @JoinTable({ name: 'machineList' })
+  @OneToMany(() => Machine, (machine) => machine.interface, { cascade: true })
   machines: Machine[];
 
-  @ManyToMany(() => Sensor, (sensor) => sensor.interfaces)
-  @JoinTable({ name: 'sensorList' })
+  @OneToMany(() => Sensor, (sensor) => sensor.interface, { cascade: true })
   sensors: Sensor[];
 
-  @ManyToMany(() => Algorithm, (algorithm) => algorithm.interfaces)
-  @JoinTable({ name: 'algorithmsList' })
+  @OneToMany(() => Algorithm, (algorithm) => algorithm.interface, { cascade: true })
   algorithms: Algorithm[];
 
-  @ManyToMany(() => Command, (command) => command.interfaces)
-  @JoinTable({ name: 'commandsList' })
+  @OneToMany(() => Command, (command) => command.interface, { cascade: true })
   commands: Command[];
 
-  @ManyToMany(() => MultiDestination, (multiDestination) => multiDestination.interfaces)
-  @JoinTable({ name: 'multiDestinationList' })
+  @OneToMany(() => MultiDestination, (multiDestination) => multiDestination.interface)
   multiDestinations: MultiDestination[];
 
-  @OneToMany(() => DestinationList, (destinationList) => destinationList.interface)
-  destinationLists: DestinationList[];
+  @OneToMany(() => InterfaceDestination, (interfaceDestination) => interfaceDestination.interface)
+  interfaceDestinations: InterfaceDestination[];
 
-  constructor(agentName: string, name: string) {
+  constructor(name: string) {
     super();
-    this.agentName = agentName;
     this.name = name;
   }
 }
+
+export const interfaceOrderBy: Array<keyof Interface> = ['name', 'createdAt', 'updatedAt'];

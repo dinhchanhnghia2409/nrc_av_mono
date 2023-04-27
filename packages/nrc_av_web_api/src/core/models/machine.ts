@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToMany } from 'typeorm';
+import { Column, Entity, ManyToOne } from 'typeorm';
 import { BaseModel } from './base';
 import { Interface } from './interface';
 
@@ -10,8 +10,8 @@ export class Machine extends BaseModel {
   @Column()
   addr: string;
 
-  @ManyToMany(() => Interface, (agentInterface) => agentInterface.machines)
-  interfaces: Interface[];
+  @ManyToOne(() => Interface, (agentInterface) => agentInterface.machines)
+  interface: Interface;
 
   constructor(name: string, addr: string) {
     super();

@@ -1,4 +1,4 @@
-export class ROSNodeResponseDTO {
+export class ROSNodeDTO {
   constructor(
     private readonly id: number,
     private readonly name: string,

@@ -17,23 +17,20 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { Subject, map } from 'rxjs';
-import { InterfaceInformationDTO } from '../agent/dto/interfaceInformation.res.dto';
+import { InterfaceInformationDTO } from '../agent/dto/interfaceInformation.dto';
 import { UserGuard, HttpBodyValidatorPipe, EventEmitterNameSpace } from '../core';
 import { TimeoutInterceptor } from '../core/interceptors';
-import {
-  ROSNodesCreationDTO,
-  vROSNodesCreationDTO
-} from '../rosNode/dto/rosNodesCreation.request.dto';
+import { ROSNodesCreationDTO, vROSNodesCreationDTO } from '../rosNode/dto/rosNodesCreation.dto';
 import { ROSNodeService } from '../rosNode/rosNode.service';
 import {
   InterfaceFilesForRunningDTO,
   vInterfaceFilesForRunningDTO
-} from './dto/interfaceFilesForRunning.request.dto';
+} from './dto/interfaceFilesForRunning.dto';
 import {
   InterfaceFilesForStoppingDTO,
   vInterfaceFilesForStoppingDTO
-} from './dto/interfaceFilesForStopping.request.dto';
-import { ROSNodesForRunningDTO, vROSNodesForRunningDTO } from './dto/rosNodeForRunning.request.dto';
+} from './dto/interfaceFilesForStopping.dto';
+import { ROSNodesForRunningDTO, vROSNodesForRunningDTO } from './dto/rosNodeForRunning.dto';
 import { VehicleService } from './vehicle.service';
 
 @ApiTags('vehicle')

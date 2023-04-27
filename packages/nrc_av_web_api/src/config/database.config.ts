@@ -1,7 +1,6 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {
-  Agent,
   Vehicle,
   Model,
   User,
@@ -12,9 +11,10 @@ import {
   Algorithm,
   Interface,
   Destination,
-  DestinationList,
+  InterfaceDestination,
   MultiDestination,
-  Command
+  Command,
+  DestinationList
 } from '../core';
 
 export const DbModule = TypeOrmModule.forRootAsync({
@@ -29,7 +29,6 @@ export const DbModule = TypeOrmModule.forRootAsync({
     entities: [
       Vehicle,
       Model,
-      Agent,
       User,
       ROSNode,
       NodeList,
@@ -38,9 +37,10 @@ export const DbModule = TypeOrmModule.forRootAsync({
       Algorithm,
       Interface,
       Destination,
-      DestinationList,
+      InterfaceDestination,
       MultiDestination,
-      Command
+      Command,
+      DestinationList
     ],
     synchronize: true
   }),

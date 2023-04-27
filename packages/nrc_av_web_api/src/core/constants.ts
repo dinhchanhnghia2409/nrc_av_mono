@@ -41,5 +41,6 @@ export const message = Object.freeze({
   agentIsOffline: 'Agent is offline',
   fileNameRequired: 'File name is required',
   machineNotFound: 'Machine not found',
-  interfaceNotFound: 'Interface not found'
+  interfaceNotFound: 'Interface not found',
+  interfaceExisted: 'Interface already exists'
 });

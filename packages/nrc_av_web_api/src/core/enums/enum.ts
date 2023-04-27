@@ -13,6 +13,11 @@ export enum SocketEnum {
   ROOM_PREFIX = 'nissan/'
 }
 
+export enum SortOrder {
+  ASC = 'ASC',
+  DESC = 'DESC'
+}
+
 export enum SocketEventEnum {
   REGISTRATION_REQUEST = 'nissan/vehicle/registration-request',
   VEHICLE_REGISTRATION = 'nissan/vehicle/registration',

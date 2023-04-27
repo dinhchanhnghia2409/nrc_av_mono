@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToMany } from 'typeorm';
+import { Column, Entity, ManyToOne } from 'typeorm';
 import { BaseModel } from './base';
 import { Interface } from './interface';
 
@@ -19,8 +19,8 @@ export class Sensor extends BaseModel {
   @Column()
   topicType: string;
 
-  @ManyToMany(() => Interface, (agentInterface) => agentInterface.machines)
-  interfaces: Interface[];
+  @ManyToOne(() => Interface, (agentInterface) => agentInterface.machines)
+  interface: Interface;
 
   constructor(
     name: string,

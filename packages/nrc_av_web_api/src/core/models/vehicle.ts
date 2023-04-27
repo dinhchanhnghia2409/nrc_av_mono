@@ -1,7 +1,5 @@
-import joi from 'joi';
 import { Column, Entity, ManyToOne, OneToMany, JoinTable } from 'typeorm';
 import { VehicleStatus } from '../enums';
-import { Agent } from './agent';
 import { BaseModel } from './base';
 import { Model } from './model';
 import { NodeList } from './nodeList';
@@ -26,18 +24,13 @@ export class Vehicle extends BaseModel {
   @Column({ default: VehicleStatus.WAITING })
   status: VehicleStatus;
 
+  @Column({ default: null })
+  agentVersion: string;
+
   @ManyToOne(() => Model, (model) => model.vehicles)
   model: Model;
-
-  @ManyToOne(() => Agent, (agent) => agent.vehicles)
-  agent: Agent;
 
   @OneToMany(() => NodeList, (nodeList) => nodeList.vehicle)
   @JoinTable({ name: 'nodeList' })
   nodeList: NodeList[];
 }
-
-export const vehicleValidateSchema = {
-  name: joi.string().min(0).max(40).trim(),
-  macAddress: joi.string().min(0).max(40).trim()
-};

@@ -2,9 +2,9 @@ import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { ROSNode, NodeList, Vehicle, ISuccessResponse, SocketEventEnum } from '../core';
 import { VehicleService } from '../vehicle/vehicle.service';
-import { ROSNodeResponseDTO } from './dto/rosNode.response.dto';
-import { ROSNodesCreationDTO } from './dto/rosNodesCreation.request.dto';
-import { ROSNodeStatusResponseDTO } from './dto/rosNodeStatus.response.dto';
+import { ROSNodeDTO } from './dto/rosNode.dto';
+import { ROSNodesCreationDTO } from './dto/rosNodesCreation.dto';
+import { ROSNodeStatusDTO } from './dto/rosNodeStatus.dto';
 
 @Injectable()
 export class ROSNodeService {
@@ -13,14 +13,14 @@ export class ROSNodeService {
     private readonly vehicleService: VehicleService
   ) {}
 
-  async getVehicleROSNodes(vehicleId: number): Promise<ROSNodeResponseDTO[]> {
+  async getVehicleROSNodes(vehicleId: number): Promise<ROSNodeDTO[]> {
     await this.vehicleService.getVehicle(vehicleId);
-    const currentNodes: ROSNodeResponseDTO[] = await this.getROSNodeByVehicleId(vehicleId);
+    const currentNodes: ROSNodeDTO[] = await this.getROSNodeByVehicleId(vehicleId);
 
     return currentNodes;
   }
 
-  async getROSNodeByVehicleId(vehicleId: number): Promise<ROSNodeResponseDTO[]> {
+  async getROSNodeByVehicleId(vehicleId: number): Promise<ROSNodeDTO[]> {
     return (
       await this.dataSource.getRepository(ROSNode).find({
         where: {
@@ -30,14 +30,14 @@ export class ROSNodeService {
           }
         }
       })
-    ).map((node) => new ROSNodeResponseDTO(node.id, node.name, node.packageName));
+    ).map((node) => new ROSNodeDTO(node.id, node.name, node.packageName));
   }
 
   async syncVehicleNodes(
     id: number
-  ): Promise<{ currentNodes: ROSNodeResponseDTO[]; latestNodes: ROSNode[] }> {
+  ): Promise<{ currentNodes: ROSNodeDTO[]; latestNodes: ROSNode[] }> {
     const vehicle = await this.vehicleService.getVehicle(id);
-    const currentNodes: ROSNodeResponseDTO[] = await this.getROSNodeByVehicleId(id);
+    const currentNodes: ROSNodeDTO[] = await this.getROSNodeByVehicleId(id);
     const latestNodes: ROSNode[] = await this.getROSNodeFromAgent(vehicle);
 
     return {
@@ -106,12 +106,12 @@ export class ROSNodeService {
     return rosNodes.length ? existedROSNodes : [];
   }
 
-  async getROSNodeStatus(vehicleId: number): Promise<ROSNodeStatusResponseDTO[]> {
+  async getROSNodeStatus(vehicleId: number): Promise<ROSNodeStatusDTO[]> {
     const vehicle = await this.vehicleService.getVehicle(vehicleId);
     return await this.getROSNodeStatusByVehicle(vehicle);
   }
 
-  async getROSNodeStatusByVehicle(vehicle: Vehicle): Promise<ROSNodeStatusResponseDTO[]> {
+  async getROSNodeStatusByVehicle(vehicle: Vehicle): Promise<ROSNodeStatusDTO[]> {
     let resultFromAgent: ISuccessResponse;
     try {
       const rosNodes = vehicle.nodeList

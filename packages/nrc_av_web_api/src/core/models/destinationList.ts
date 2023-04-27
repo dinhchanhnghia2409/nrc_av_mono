@@ -1,24 +1,27 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { BaseRelationModel } from './baseRelation';
 import { Destination } from './destination';
-import { Interface } from './interface';
+import { MultiDestination } from './multiDestination';
 
 @Entity()
 export class DestinationList extends BaseRelationModel {
   @PrimaryColumn()
-  interface_id: number;
+  multi_destination_id: number;
 
   @PrimaryColumn()
   destination_id: number;
-
-  @ManyToOne(() => Interface, (agentInterface) => agentInterface.id)
-  @JoinColumn({ name: 'interface_id' })
-  public interface: Interface;
 
   @ManyToOne(() => Destination, (destination) => destination.id)
   @JoinColumn({ name: 'destination_id' })
   public destination: Destination;
 
-  @Column()
-  name: string;
+  @ManyToOne(() => MultiDestination, (multiDestination) => multiDestination.id)
+  @JoinColumn({ name: 'multi_destination_id' })
+  public multiDestination: MultiDestination;
+
+  constructor(destination: Destination, multiDestination: MultiDestination) {
+    super();
+    this.destination = destination;
+    this.multiDestination = multiDestination;
+  }
 }

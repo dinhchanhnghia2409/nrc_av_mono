@@ -1,6 +1,5 @@
 export * from './vehicle';
 export * from './model';
-export * from './agent';
 export * from './rosNode';
 export * from './user';
 export * from './nodeList';
@@ -9,6 +8,7 @@ export * from './sensor';
 export * from './algorithms';
 export * from './command';
 export * from './destination';
-export * from './destinationList';
+export * from './interfaceDestination';
 export * from './multiDestination';
 export * from './machine';
+export * from './destinationList';
