@@ -101,7 +101,11 @@ export class VehicleService {
   async getVehicle(id: number, acceptedStatus = VehicleStatus.ACTIVE): Promise<Vehicle> {
     const vehicle = await this.dataSource.getRepository(Vehicle).findOne({
       where: { id },
-      relations: ['nodeList', 'nodeList.rosNode']
+      relations: {
+        nodeList: {
+          rosNode: true
+        }
+      }
     });
     if (!vehicle) {
       throw new HttpException(message.vehicleNotFound, HttpStatus.NOT_FOUND);

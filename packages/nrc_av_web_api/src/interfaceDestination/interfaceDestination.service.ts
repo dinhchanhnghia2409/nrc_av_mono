@@ -23,4 +23,46 @@ export class InterfaceDestinationService {
       }))
     );
   }
+
+  async updateInterfaceDests(
+    currentInterfaceDests: InterfaceDestination[],
+    newInterfaceDests: InterfaceDestDTO[],
+    transactionalEntityManager: EntityManager,
+    agentInterface: Interface
+  ): Promise<InterfaceDestination[]> {
+    const updatedInterfaceDests: InterfaceDestination[] = [];
+    const insertedInterfaceDests: InterfaceDestination[] = [];
+    newInterfaceDests.forEach((newInterfaceDest) => {
+      const currentInterfaceDest = currentInterfaceDests.find(
+        (currentInterfaceDest) =>
+          currentInterfaceDest.interface_id === newInterfaceDest.interface_id &&
+          currentInterfaceDest.destination_id === newInterfaceDest.destination_id
+      );
+      if (currentInterfaceDest) {
+        currentInterfaceDest.name = newInterfaceDest.name;
+        currentInterfaceDest.destination.posX = newInterfaceDest.posX;
+        currentInterfaceDest.destination.posY = newInterfaceDest.posY;
+        currentInterfaceDest.destination.posTh = newInterfaceDest.posTh;
+        updatedInterfaceDests.push(currentInterfaceDest);
+        currentInterfaceDests.splice(currentInterfaceDests.indexOf(currentInterfaceDest), 1);
+      } else {
+        insertedInterfaceDests.push(
+          new InterfaceDestination(
+            newInterfaceDest.name,
+            new Destination(newInterfaceDest.posX, newInterfaceDest.posY, newInterfaceDest.posTh),
+            agentInterface
+          )
+        );
+      }
+    });
+    currentInterfaceDests.forEach((currentInterfaceDest) => {
+      currentInterfaceDest.isDeleted = true;
+    });
+    return (
+      await transactionalEntityManager.save(
+        InterfaceDestination,
+        updatedInterfaceDests.concat(currentInterfaceDests)
+      )
+    ).concat(await transactionalEntityManager.save(InterfaceDestination, insertedInterfaceDests));
+  }
 }

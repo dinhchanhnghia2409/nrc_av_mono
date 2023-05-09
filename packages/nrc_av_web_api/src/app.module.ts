@@ -7,7 +7,6 @@ import { AuthModule } from './auth/auth.module';
 import { CommandModule } from './command/command.module';
 import { configuration, DbModule } from './config';
 import { DestinationModule } from './destination/destination.module';
-import { DestinationListModule } from './destinationList/destinationList.module';
 import { InterfaceModule } from './interface/interface.module';
 import { InterfaceDestinationModule } from './interfaceDestination/interfaceDestination.module';
 import { MachineModule } from './machine/machine.module';
@@ -36,8 +35,7 @@ import { VehicleModule } from './vehicle/vehicle.module';
     SensorModule,
     DestinationModule,
     InterfaceDestinationModule,
-    MultiDestinationModule,
-    DestinationListModule
+    MultiDestinationModule
   ]
 })
 export class AppModule {}

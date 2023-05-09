@@ -1,6 +1,6 @@
-import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
+import { Column, Entity, JoinTable, ManyToMany, ManyToOne } from 'typeorm';
 import { BaseModel } from './base';
-import { DestinationList } from './destinationList';
+import { Destination } from './destination';
 import { Interface } from './interface';
 
 @Entity()
@@ -8,14 +8,16 @@ export class MultiDestination extends BaseModel {
   @Column()
   name: string;
 
-  @OneToMany(() => DestinationList, (destinationList) => destinationList.multiDestination)
-  destinationList: DestinationList[];
+  @ManyToMany(() => Destination, (destination) => destination.multiDestination, { cascade: true })
+  @JoinTable({ name: 'destination_list' })
+  destinations: Destination[];
 
   @ManyToOne(() => Interface, (agentInterface) => agentInterface.multiDestinations)
   interface: Interface;
 
-  constructor(name: string) {
+  constructor(name: string, destinations: Destination[]) {
     super();
     this.name = name;
+    this.destinations = destinations;
   }
 }

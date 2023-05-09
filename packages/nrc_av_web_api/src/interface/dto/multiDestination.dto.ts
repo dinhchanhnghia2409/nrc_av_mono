@@ -4,6 +4,12 @@ import { DestinationDTO, vDestDTO } from './destination.dto';
 
 export class MultiDestinationDTO {
   @ApiProperty({
+    description: 'id',
+    example: 1
+  })
+  id: number;
+
+  @ApiProperty({
     description: 'name',
     example: 'Autonomy 5k v1'
   })
@@ -25,6 +31,7 @@ export class MultiDestinationDTO {
 }
 
 export const vMultiDestDTO = joi.object<MultiDestinationDTO>({
+  id: joi.number(),
   name: joi.string().required(),
   destinations: joi.array().items(vDestDTO).required()
 });

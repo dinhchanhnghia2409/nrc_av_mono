@@ -3,6 +3,12 @@ import joi from 'joi';
 
 export class AlgorithmDTO {
   @ApiProperty({
+    description: 'id',
+    example: 1
+  })
+  id: number;
+
+  @ApiProperty({
     description: 'name',
     example: 'GPSBASE'
   })
@@ -34,6 +40,7 @@ export class AlgorithmDTO {
 }
 
 export const vAlgorithmDTO = joi.object<AlgorithmDTO>({
+  id: joi.number(),
   name: joi.string().required(),
   errRate: joi.number().required(),
   warnRate: joi.number().required(),

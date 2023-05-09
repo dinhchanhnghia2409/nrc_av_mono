@@ -11,4 +11,3 @@ export * from './destination';
 export * from './interfaceDestination';
 export * from './multiDestination';
 export * from './machine';
-export * from './destinationList';

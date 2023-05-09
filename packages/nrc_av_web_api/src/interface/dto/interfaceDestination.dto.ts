@@ -3,6 +3,18 @@ import joi from 'joi';
 
 export class InterfaceDestDTO {
   @ApiProperty({
+    description: 'interface id',
+    example: 1
+  })
+  interface_id: number;
+
+  @ApiProperty({
+    description: 'destination id',
+    example: 1
+  })
+  destination_id: number;
+
+  @ApiProperty({
     description: 'name',
     example: 'Dest 0'
   })
@@ -28,6 +40,8 @@ export class InterfaceDestDTO {
 }
 
 export const vInterfaceDestDTO = joi.object<InterfaceDestDTO>({
+  interface_id: joi.number(),
+  destination_id: joi.number(),
   name: joi.string().required(),
   posX: joi.number().required(),
   posY: joi.number().required(),

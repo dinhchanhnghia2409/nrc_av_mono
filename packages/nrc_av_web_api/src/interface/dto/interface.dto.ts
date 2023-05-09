@@ -63,7 +63,7 @@ export class InterfaceDTO {
     ],
     isArray: true
   })
-  algs: AlgorithmDTO[];
+  algorithms: AlgorithmDTO[];
 
   @ApiProperty({
     description: 'command',
@@ -74,14 +74,14 @@ export class InterfaceDTO {
     ],
     isArray: true
   })
-  cmds: CommandDTO[];
+  commands: CommandDTO[];
 
   @ApiProperty({
     description: 'command',
     example: [{ name: 'Dest 0', posX: 4695.0, posY: -1138.0, posTh: -3.066 }],
     isArray: true
   })
-  dests: InterfaceDestDTO[];
+  interfaceDestinations: InterfaceDestDTO[];
 
   @ApiProperty({
     description: 'command',
@@ -101,15 +101,15 @@ export class InterfaceDTO {
     ],
     isArray: true
   })
-  multiDests: MultiDestinationDTO[];
+  multiDestinations: MultiDestinationDTO[];
 }
 
 export const vInterfaceDTO = joi.object<InterfaceDTO>({
   name: joi.string().required(),
   machines: joi.array().items(vMachineDTO),
   sensors: joi.array().items(vSensorDTO),
-  algs: joi.array().items(vAlgorithmDTO),
-  cmds: joi.array().items(vCommandDTO),
-  dests: joi.array().items(vInterfaceDestDTO),
-  multiDests: joi.array().items(vMultiDestDTO)
+  algorithms: joi.array().items(vAlgorithmDTO),
+  commands: joi.array().items(vCommandDTO),
+  interfaceDestinations: joi.array().items(vInterfaceDestDTO),
+  multiDestinations: joi.array().items(vMultiDestDTO)
 });

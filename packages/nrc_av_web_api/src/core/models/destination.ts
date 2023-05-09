@@ -1,7 +1,7 @@
-import { Column, Entity, OneToMany } from 'typeorm';
+import { Column, Entity, ManyToMany, OneToMany } from 'typeorm';
 import { BaseModel } from './base';
-import { DestinationList } from './destinationList';
 import { InterfaceDestination } from './interfaceDestination';
+import { MultiDestination } from './multiDestination';
 
 @Entity()
 export class Destination extends BaseModel {
@@ -17,8 +17,8 @@ export class Destination extends BaseModel {
   @OneToMany(() => InterfaceDestination, (interfaceDestination) => interfaceDestination.destination)
   interfaceDestination: InterfaceDestination[];
 
-  @OneToMany(() => DestinationList, (destinationList) => destinationList.destination)
-  destinationList: DestinationList;
+  @ManyToMany(() => MultiDestination, (multiDestination) => multiDestination.destinations)
+  multiDestination: MultiDestination;
 
   constructor(posX: number, posY: number, posTh: number) {
     super();

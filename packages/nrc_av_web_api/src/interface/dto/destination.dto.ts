@@ -3,6 +3,12 @@ import joi from 'joi';
 
 export class DestinationDTO {
   @ApiProperty({
+    description: 'id',
+    example: 1
+  })
+  id: number;
+
+  @ApiProperty({
     description: 'posX',
     example: 12
   })
@@ -22,6 +28,7 @@ export class DestinationDTO {
 }
 
 export const vDestDTO = joi.object<DestinationDTO>({
+  id: joi.number(),
   posX: joi.number().required(),
   posY: joi.number().required(),
   posTh: joi.number().required()

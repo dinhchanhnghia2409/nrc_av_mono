@@ -1,27 +1,38 @@
 import { Injectable } from '@nestjs/common';
-import { EntityManager } from 'typeorm';
 import { Command } from '../core';
 import { CommandDTO } from '../interface/dto/command.dto';
 
 @Injectable()
 export class CommandService {
-  async addCommands(
-    transactionalEntityManager: EntityManager,
-    cmdDTOs: CommandDTO[]
-  ): Promise<Command[]> {
-    return await transactionalEntityManager.save(
-      Command,
-      cmdDTOs.map(
-        (cmd) =>
+  updateCommands(currentCmds: Command[], newCmds: CommandDTO[]): Command[] {
+    const updatedCmds: Command[] = [];
+    newCmds.forEach((newCmd) => {
+      const currentCmd = currentCmds.find((currentCmd) => currentCmd.id === newCmd.id);
+      if (currentCmd) {
+        currentCmd.name = newCmd.name;
+        currentCmd.command = newCmd.command;
+        currentCmd.nodes = newCmd.nodes;
+        currentCmd.inclByDef = newCmd.inclByDef;
+        currentCmd.autoStart = newCmd.autoStart;
+        currentCmd.autoRecord = newCmd.autoRecord;
+        updatedCmds.push(currentCmd);
+        currentCmds.splice(currentCmds.indexOf(currentCmd), 1);
+      } else {
+        updatedCmds.push(
           new Command(
-            cmd.name,
-            cmd.command,
-            cmd.nodes,
-            cmd.inclByDef,
-            cmd.autoStart,
-            cmd.autoRecord
+            newCmd.name,
+            newCmd.command,
+            newCmd.nodes,
+            newCmd.inclByDef,
+            newCmd.autoStart,
+            newCmd.autoRecord
           )
-      )
-    );
+        );
+      }
+    });
+    currentCmds.forEach((currentCmd) => {
+      currentCmd.isDeleted = true;
+    });
+    return updatedCmds.concat(currentCmds);
   }
 }

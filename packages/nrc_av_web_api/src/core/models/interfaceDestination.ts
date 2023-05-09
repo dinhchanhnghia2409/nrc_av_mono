@@ -22,9 +22,10 @@ export class InterfaceDestination extends BaseRelationModel {
   @Column()
   name: string;
 
-  constructor(name: string, destination: Destination) {
+  constructor(name: string, destination: Destination, agentInterface: Interface) {
     super();
     this.name = name;
     this.destination = destination;
+    this.interface = agentInterface;
   }
 }

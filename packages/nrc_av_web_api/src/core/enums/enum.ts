@@ -39,3 +39,15 @@ export enum EventEmitterNameSpace {
   VEHICLE_STATUS = 'vehicle.status',
   VEHICLE_INTERFACE_DETAIL_STATUS = 'vehicle.interface.detail.status'
 }
+
+export enum Alias {
+  INTERFACE = 'interface',
+  ALGORITHMS = 'algorithms',
+  MACHINES = 'machines',
+  SENSORS = 'sensors',
+  COMMANDS = 'commands',
+  MULTI_DESTINATIONS = 'multiDestinations',
+  INTERFACE_DESTINATIONS = 'interfaceDestinations',
+  DESTINATIONS = 'destinations',
+  DESTINATION = 'destination'
+}

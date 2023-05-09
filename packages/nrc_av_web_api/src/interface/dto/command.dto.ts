@@ -3,6 +3,12 @@ import joi from 'joi';
 
 export class CommandDTO {
   @ApiProperty({
+    description: 'id',
+    example: 1
+  })
+  id: number;
+
+  @ApiProperty({
     description: 'name',
     example: 'kelly_interface'
   })
@@ -40,9 +46,10 @@ export class CommandDTO {
 }
 
 export const vCommandDTO = joi.object<CommandDTO>({
+  id: joi.number(),
   name: joi.string(),
   command: joi.string().allow(''),
-  nodes: joi.string().allow(''),
+  nodes: joi.string().allow('', null),
   inclByDef: joi.boolean(),
   autoStart: joi.boolean(),
   autoRecord: joi.boolean()

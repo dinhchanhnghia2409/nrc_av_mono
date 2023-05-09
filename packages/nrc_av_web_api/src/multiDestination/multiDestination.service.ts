@@ -1,57 +1,55 @@
 import { Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
-import { DestinationList, MultiDestination } from '../core';
-import { DestinationListService } from '../destinationList/destinationList.service';
+import { Destination, MultiDestination } from '../core';
+import { DestinationService } from '../destination/destination.service';
 import { MultiDestinationDTO } from '../interface/dto/multiDestination.dto';
-import { DestinationService } from './../destination/destination.service';
 
 @Injectable()
 export class MultiDestinationService {
-  constructor(
-    private readonly destinationService: DestinationService,
-    private readonly destinationListService: DestinationListService
-  ) {}
+  constructor(private readonly destinationService: DestinationService) {}
   async addMultiDests(
     transactionalEntityManager: EntityManager,
     multiDestDTOs: MultiDestinationDTO[]
   ): Promise<MultiDestination[]> {
-    const dests = await this.destinationService.addDests(
-      transactionalEntityManager,
-      multiDestDTOs.reduce((acc, multiDestDTO) => [...acc, ...multiDestDTO.destinations], [])
+    const multiDests = multiDestDTOs.map(
+      (multiDestDTO) =>
+        new MultiDestination(
+          multiDestDTO.name,
+          multiDestDTO.destinations.map((dest) => new Destination(dest.posX, dest.posY, dest.posTh))
+        )
     );
-    let multiDests = multiDestDTOs.map((multiDestDTO) => new MultiDestination(multiDestDTO.name));
 
-    multiDests = await transactionalEntityManager.save(MultiDestination, multiDests);
-    const destList: DestinationList[] = [];
-    const destListResponse: DestinationList[] = [];
-    multiDestDTOs.forEach((multiDestDTO) => {
-      const multiDest = multiDests.find((multiDest) => multiDest.name === multiDestDTO.name);
-      dests.forEach((dest) => {
-        const destDTO = multiDestDTO.destinations.find(
-          (destination) =>
-            destination.posX === dest.posX &&
-            destination.posY === dest.posY &&
-            destination.posTh === dest.posTh
+    return await transactionalEntityManager.save(MultiDestination, multiDests);
+  }
+
+  async updateMultiDests(
+    currentMultiDests: MultiDestination[],
+    newMultiDests: MultiDestinationDTO[],
+    transactionalEntityManager: EntityManager
+  ): Promise<MultiDestination[]> {
+    const updatedMultiDests: MultiDestination[] = [];
+    newMultiDests.forEach((newMultiDest) => {
+      const currentMultiDest = currentMultiDests.find(
+        (currentMultiDest) => currentMultiDest.id === newMultiDest.id
+      );
+      if (currentMultiDest) {
+        currentMultiDest.name = newMultiDest.name;
+        currentMultiDest.destinations = this.destinationService.updateDests(
+          currentMultiDest.destinations,
+          newMultiDest.destinations
         );
-        if (destDTO) {
-          multiDestDTO.destinations.splice(multiDestDTO.destinations.indexOf(destDTO), 1);
-          const newDestinationList = new DestinationList(dest, multiDest);
-          destList.push(newDestinationList);
-          destListResponse.push(newDestinationList);
-        }
-      });
+        updatedMultiDests.push(currentMultiDest);
+      } else {
+        updatedMultiDests.push(
+          new MultiDestination(
+            newMultiDest.name,
+            newMultiDest.destinations.map(
+              (dest) => new Destination(dest.posX, dest.posY, dest.posTh)
+            )
+          )
+        );
+      }
     });
-    await this.destinationListService.addDestinationLists(transactionalEntityManager, destList);
-
-    return multiDests.map((multiDest) => ({
-      ...multiDest,
-      destinationList: destListResponse.reduce((acc, destList) => {
-        if (destList.multi_destination_id === multiDest.id) {
-          destList.multiDestination = null;
-          return [...acc, destList];
-        }
-        return acc;
-      }, [])
-    }));
+    return await transactionalEntityManager.save(MultiDestination, updatedMultiDests);
   }
 }

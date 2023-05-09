@@ -1,17 +1,27 @@
 import { Injectable } from '@nestjs/common';
-import { EntityManager } from 'typeorm';
 import { Machine } from '../core';
 import { MachineDTO } from '../interface/dto/machine.dto';
 
 @Injectable()
 export class MachineService {
-  async addMachines(
-    transactionalEntityManager: EntityManager,
-    machineDTOs: MachineDTO[]
-  ): Promise<Machine[]> {
-    return await transactionalEntityManager.save(
-      Machine,
-      machineDTOs.map((machine) => new Machine(machine.name, machine.addr))
-    );
+  updateMachines(currentMachines: Machine[], newMachines: MachineDTO[]): Machine[] {
+    const updatedMachines: Machine[] = [];
+    newMachines.forEach((newMachine) => {
+      const currentMachine = currentMachines.find(
+        (currentMachine) => currentMachine.id === newMachine.id
+      );
+      if (currentMachine) {
+        currentMachine.name = newMachine.name;
+        currentMachine.addr = newMachine.addr;
+        updatedMachines.push(currentMachine);
+        currentMachines.splice(currentMachines.indexOf(currentMachine), 1);
+      } else {
+        updatedMachines.push(new Machine(newMachine.name, newMachine.addr));
+      }
+    });
+    currentMachines.forEach((currentMachine) => {
+      currentMachine.isDeleted = true;
+    });
+    return updatedMachines.concat(currentMachines);
   }
 }

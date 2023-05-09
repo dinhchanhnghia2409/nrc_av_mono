@@ -13,8 +13,7 @@ import {
   Destination,
   InterfaceDestination,
   MultiDestination,
-  Command,
-  DestinationList
+  Command
 } from '../core';
 
 export const DbModule = TypeOrmModule.forRootAsync({
@@ -39,8 +38,7 @@ export const DbModule = TypeOrmModule.forRootAsync({
       Destination,
       InterfaceDestination,
       MultiDestination,
-      Command,
-      DestinationList
+      Command
     ],
     synchronize: true
   }),

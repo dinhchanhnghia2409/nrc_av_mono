@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { DataSource, EntityManager, ILike, In } from 'typeorm';
 import { AlgorithmService } from '../algorithm/algorithm.service';
 import { CommandService } from '../command/command.service';
-import { Interface, message } from '../core';
+import { Algorithm, Alias, Command, Interface, Machine, Sensor, message } from '../core';
 import { InterfaceDestinationService } from '../interfaceDestination/interfaceDestination.service';
 import { MachineService } from '../machine/machine.service';
 import { MultiDestinationService } from '../multiDestination/multiDestination.service';
@@ -23,22 +23,51 @@ export class InterfaceService {
   ) {}
 
   async getInterfaceWithAllRelations(id: number): Promise<Interface> {
-    const agentInterface = await this.dataSource.getRepository(Interface).findOne({
-      where: {
-        id
-      },
-      relations: [
-        'machines',
-        'sensors',
-        'algorithms',
-        'commands',
-        'multiDestinations',
-        'interfaceDestinations',
-        'interfaceDestinations.destination',
-        'multiDestinations.destinationList',
-        'multiDestinations.destinationList.destination'
-      ]
-    });
+    const agentInterface = await this.dataSource
+      .getRepository(Interface)
+      .createQueryBuilder(Alias.INTERFACE)
+      .leftJoinAndSelect(
+        `${Alias.INTERFACE}.${Alias.MACHINES}`,
+        Alias.MACHINES,
+        `${Alias.MACHINES}.isDeleted = false`
+      )
+      .leftJoinAndSelect(
+        `${Alias.INTERFACE}.${Alias.SENSORS}`,
+        Alias.SENSORS,
+        `${Alias.SENSORS}.isDeleted = false`
+      )
+      .leftJoinAndSelect(
+        `${Alias.INTERFACE}.${Alias.ALGORITHMS}`,
+        Alias.ALGORITHMS,
+        `${Alias.ALGORITHMS}.isDeleted = false`
+      )
+      .leftJoinAndSelect(
+        `${Alias.INTERFACE}.${Alias.COMMANDS}`,
+        Alias.COMMANDS,
+        `${Alias.COMMANDS}.isDeleted = false`
+      )
+      .leftJoinAndSelect(
+        `${Alias.INTERFACE}.${Alias.MULTI_DESTINATIONS}`,
+        Alias.MULTI_DESTINATIONS,
+        `${Alias.MULTI_DESTINATIONS}.isDeleted = false`
+      )
+      .leftJoinAndSelect(
+        `${Alias.INTERFACE}.${Alias.INTERFACE_DESTINATIONS}`,
+        Alias.INTERFACE_DESTINATIONS,
+        `${Alias.INTERFACE_DESTINATIONS}.isDeleted = false`
+      )
+      .leftJoinAndSelect(
+        `${Alias.INTERFACE_DESTINATIONS}.${Alias.DESTINATION}`,
+        Alias.DESTINATION,
+        `${Alias.DESTINATION}.isDeleted = false`
+      )
+      .leftJoinAndSelect(
+        `${Alias.MULTI_DESTINATIONS}.${Alias.DESTINATIONS}`,
+        Alias.DESTINATIONS,
+        `${Alias.DESTINATIONS}.isDeleted = false`
+      )
+      .where({ id, isDeleted: false })
+      .getOne();
     if (!agentInterface) {
       throw new HttpException(message.interfaceNotFound, HttpStatus.NOT_FOUND);
     }
@@ -46,22 +75,54 @@ export class InterfaceService {
   }
 
   getInterfacesWithAllRelationsByNames(names: string[]): Promise<Interface[]> {
-    return this.dataSource.getRepository(Interface).find({
-      where: {
-        name: In(names)
-      },
-      relations: [
-        'machines',
-        'sensors',
-        'algorithms',
-        'commands',
-        'multiDestinations',
-        'interfaceDestinations',
-        'interfaceDestinations.destination',
-        'multiDestinations.destinationList',
-        'multiDestinations.destinationList.destination'
-      ]
-    });
+    return this.dataSource
+      .getRepository(Interface)
+      .createQueryBuilder(Alias.INTERFACE)
+      .leftJoinAndSelect(
+        `${Alias.INTERFACE}.${Alias.MACHINES}`,
+        Alias.MACHINES,
+        `${Alias.MACHINES}.isDeleted = false`
+      )
+      .leftJoinAndSelect(
+        `${Alias.INTERFACE}.${Alias.SENSORS}`,
+        Alias.SENSORS,
+        `${Alias.SENSORS}.isDeleted = false`
+      )
+      .leftJoinAndSelect(
+        `${Alias.INTERFACE}.${Alias.ALGORITHMS}`,
+        Alias.ALGORITHMS,
+        `${Alias.ALGORITHMS}.isDeleted = false`
+      )
+      .leftJoinAndSelect(
+        `${Alias.INTERFACE}.${Alias.COMMANDS}`,
+        Alias.COMMANDS,
+        `${Alias.COMMANDS}.isDeleted = false`
+      )
+      .leftJoinAndSelect(
+        `${Alias.INTERFACE}.${Alias.MULTI_DESTINATIONS}`,
+        Alias.MULTI_DESTINATIONS,
+        `${Alias.MULTI_DESTINATIONS}.isDeleted = false`
+      )
+      .leftJoinAndSelect(
+        `${Alias.INTERFACE}.${Alias.INTERFACE_DESTINATIONS}`,
+        Alias.INTERFACE_DESTINATIONS,
+        `${Alias.INTERFACE_DESTINATIONS}.isDeleted = false`
+      )
+      .leftJoinAndSelect(
+        `${Alias.INTERFACE_DESTINATIONS}.${Alias.DESTINATION}`,
+        Alias.DESTINATION,
+        `${Alias.DESTINATION}.isDeleted = false`
+      )
+      .leftJoinAndSelect(
+        `${Alias.MULTI_DESTINATIONS}.${Alias.DESTINATIONS}`,
+        Alias.DESTINATIONS,
+        `${Alias.DESTINATIONS}.isDeleted = false`
+      )
+      .where({
+        name: In(names),
+        isDeleted: false
+      })
+      .getMany();
   }
 
   getInterfaceByNames(names: string[]): Promise<Interface[]> {
@@ -83,11 +144,11 @@ export class InterfaceService {
   async createInterface(interfaceDTO: InterfaceDTO): Promise<Interface> {
     const {
       name,
-      algs: algorithms,
-      cmds: commands,
-      dests: destinations,
+      algorithms,
+      commands,
+      interfaceDestinations: destinations,
       machines,
-      multiDests: multiDestinations,
+      multiDestinations,
       sensors
     } = interfaceDTO;
 
@@ -99,31 +160,34 @@ export class InterfaceService {
     let newInterface = new Interface(name);
 
     await this.dataSource.manager.transaction(async (transactionalEntityManager: EntityManager) => {
-      if (machines?.length) {
-        const newMachines = await this.machineService.addMachines(
-          transactionalEntityManager,
-          machines
-        );
-        newInterface.machines = newMachines;
-      }
+      newInterface.machines = machines?.map((machine) => new Machine(machine.name, machine.addr));
 
-      if (algorithms?.length) {
-        const newAlgs = await this.algorithmService.addAlgorithms(
-          transactionalEntityManager,
-          algorithms
-        );
-        newInterface.algorithms = newAlgs;
-      }
+      newInterface.algorithms = algorithms?.map(
+        (alg) => new Algorithm(alg.name, alg.errRate, alg.warnRate, alg.topicName, alg.topicType)
+      );
 
-      if (commands?.length) {
-        const newCmds = await this.commandService.addCommands(transactionalEntityManager, commands);
-        newInterface.commands = newCmds;
-      }
+      newInterface.commands = commands?.map(
+        (cmd) =>
+          new Command(
+            cmd.name,
+            cmd.command,
+            cmd.nodes,
+            cmd.inclByDef,
+            cmd.autoStart,
+            cmd.autoRecord
+          )
+      );
 
-      if (sensors?.length) {
-        const newSensors = await this.sensorService.addsensors(transactionalEntityManager, sensors);
-        newInterface.sensors = newSensors;
-      }
+      newInterface.sensors = sensors?.map(
+        (sensor) =>
+          new Sensor(
+            sensor.name,
+            sensor.errRate,
+            sensor.warnRate,
+            sensor.topicName,
+            sensor.topicType
+          )
+      );
 
       if (multiDestinations?.length) {
         const newMultiDests = await this.multiDestinationService.addMultiDests(
@@ -169,5 +233,68 @@ export class InterfaceService {
       }
     });
     return { interfaces, total };
+  }
+
+  async updateInterface(id: number, interfaceDTO: InterfaceDTO) {
+    let agentInterface = await this.getInterfaceWithAllRelations(id);
+    const {
+      name,
+      machines,
+      algorithms: algs,
+      commands: cmds,
+      sensors,
+      multiDestinations: multiDests,
+      interfaceDestinations: dests
+    } = interfaceDTO;
+
+    const existedInterface = await this.getInterfaceByName(name);
+    if (existedInterface && existedInterface.id !== id) {
+      throw new HttpException(message.interfaceExisted, HttpStatus.BAD_REQUEST);
+    }
+
+    agentInterface.name = name;
+    agentInterface.machines = this.machineService.updateMachines(agentInterface.machines, machines);
+    agentInterface.algorithms = this.algorithmService.updateAlgorithms(
+      agentInterface.algorithms,
+      algs
+    );
+    agentInterface.commands = this.commandService.updateCommands(agentInterface.commands, cmds);
+    agentInterface.sensors = this.sensorService.updateSensors(agentInterface.sensors, sensors);
+    await this.dataSource.manager.transaction(async (transactionalEntityManager: EntityManager) => {
+      agentInterface.multiDestinations = await this.multiDestinationService.updateMultiDests(
+        agentInterface.multiDestinations,
+        multiDests,
+        transactionalEntityManager
+      );
+      const currentInterfaceDests = agentInterface.interfaceDestinations;
+      delete agentInterface.interfaceDestinations;
+      agentInterface = await transactionalEntityManager.save(Interface, agentInterface);
+      agentInterface.interfaceDestinations = (
+        await this.interfaceDestinationService.updateInterfaceDests(
+          currentInterfaceDests,
+          dests,
+          transactionalEntityManager,
+          agentInterface
+        )
+      )
+        .filter((interfaceDest) => !interfaceDest.isDeleted)
+        .map((interfaceDest) => ({ ...interfaceDest, interface: null }));
+    });
+
+    agentInterface.machines = agentInterface.machines.filter((machine) => !machine.isDeleted);
+    agentInterface.algorithms = agentInterface.algorithms.filter(
+      (algorithm) => !algorithm.isDeleted
+    );
+    agentInterface.commands = agentInterface.commands.filter((command) => !command.isDeleted);
+    agentInterface.sensors = agentInterface.sensors.filter((sensor) => !sensor.isDeleted);
+    agentInterface.multiDestinations = agentInterface.multiDestinations.filter((multiDest) => {
+      if (!multiDest.isDeleted) {
+        multiDest.destinations = multiDest.destinations.filter((dest) => !dest.isDeleted);
+        return true;
+      }
+      return false;
+    });
+
+    return agentInterface;
   }
 }

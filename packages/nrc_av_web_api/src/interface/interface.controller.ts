@@ -10,7 +10,8 @@ import {
   UseGuards,
   UseInterceptors,
   UsePipes,
-  Query
+  Query,
+  Put
 } from '@nestjs/common';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
@@ -50,5 +51,15 @@ export class InterfaceController {
   @UsePipes(new HttpBodyValidatorPipe(vInterfaceDTO))
   async createInterface(@Res() res: Response, @Body() body: InterfaceDTO) {
     return res.status(HttpStatus.OK).send(await this.interfaceService.createInterface(body));
+  }
+
+  @Put('/:id')
+  @UsePipes(new HttpBodyValidatorPipe(vInterfaceDTO))
+  async updateInterface(
+    @Res() res: Response,
+    @Body() body: InterfaceDTO,
+    @Param('id', ParseIntPipe) id: number
+  ) {
+    return res.status(HttpStatus.OK).send(await this.interfaceService.updateInterface(id, body));
   }
 }

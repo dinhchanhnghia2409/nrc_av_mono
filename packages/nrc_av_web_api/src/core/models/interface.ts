@@ -10,7 +10,7 @@ import { Sensor } from './sensor';
 
 @Entity()
 export class Interface extends BaseModel {
-  @Column({ nullable: true })
+  @Column()
   name: string;
 
   @ManyToOne(() => Model, (model) => model.interfaces)
