@@ -2,6 +2,7 @@ import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { DataSource } from 'typeorm';
 import { AgentGateway } from '../agent/agent.gateway';
+import { CommandService } from '../command/command.service';
 import {
   Vehicle,
   VehicleStatus,
@@ -15,8 +16,6 @@ import {
   EventEmitterNameSpace
 } from '../core';
 import { InterfaceService } from '../interface/interface.service';
-import { InterfaceFilesForRunningDTO } from './dto/interfaceFilesForRunning.dto';
-import { InterfaceFilesForStoppingDTO } from './dto/interfaceFilesForStopping.dto';
 import { RegisterAgentDTO } from './dto/registerAgent.dto';
 import { ROSNodesForRunningDTO } from './dto/rosNodeForRunning.dto';
 
@@ -26,7 +25,8 @@ export class VehicleService {
     private readonly dataSource: DataSource,
     private readonly agentGateway: AgentGateway,
     private eventEmitter: EventEmitter2,
-    private readonly interfaceService: InterfaceService
+    private readonly interfaceService: InterfaceService,
+    private readonly commandService: CommandService
   ) {}
 
   async activateVehicle(id: number): Promise<Vehicle> {
@@ -207,21 +207,15 @@ export class VehicleService {
     return resultFromAgent;
   }
 
-  async startInterfaceFiles(
-    vehicleId: number,
-    interfaceFilesFoRunningDTO: InterfaceFilesForRunningDTO
-  ) {
+  async startInterfaceFiles(vehicleId: number, interfaceId: number) {
     const vehicle = await this.getVehicle(vehicleId);
-    const { interfaceNames: fileNames } = interfaceFilesFoRunningDTO;
-    const interfaces = await this.interfaceService.getInterfacesWithAllRelationsByNames(fileNames);
-    if (!interfaces?.length) {
+    const agentInterface = await this.interfaceService.getInterfaceWithAllRelations(interfaceId);
+    if (!agentInterface) {
       throw new HttpException(message.interfaceNotFound, HttpStatus.NOT_FOUND);
     }
 
     try {
-      return await this.getResultFromAgent(vehicle, SocketEventEnum.RUN_INTERFACE, {
-        interfaces
-      });
+      return await this.getResultFromAgent(vehicle, SocketEventEnum.RUN_INTERFACE, agentInterface);
     } catch (err) {
       throw new HttpException(err, HttpStatus.SERVICE_UNAVAILABLE);
     }
@@ -263,16 +257,43 @@ export class VehicleService {
     }
   }
 
-  async stopInterfaceFiles(
-    vehicleId: number,
-    interfaceFilesStoppingDTO: InterfaceFilesForStoppingDTO
-  ) {
+  async stopInterfaceFiles(vehicleId: number, interfaceId: number) {
     const vehicle = await this.getVehicle(vehicleId);
-    const { interfaceNames: fileNames } = interfaceFilesStoppingDTO;
+    const agentInterface = await this.interfaceService.getInterfaceById(interfaceId);
     try {
-      return await this.getResultFromAgent(vehicle, SocketEventEnum.STOP_INTERFACE, {
-        fileNames
-      });
+      return await this.getResultFromAgent(
+        vehicle,
+        SocketEventEnum.STOP_INTERFACE,
+        agentInterface.name
+      );
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+  }
+
+  async runInterfaceCommand(vehicleId: number, interfaceId: number, commandId: number) {
+    const vehicle = await this.getVehicle(vehicleId);
+    const command = await this.commandService.getCommand(interfaceId, commandId);
+    try {
+      return await this.getResultFromAgent(
+        vehicle,
+        SocketEventEnum.RUN_INTERFACE_COMMAND,
+        command.command
+      );
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+  }
+
+  async stopInterfaceCommand(vehicleId: number, interfaceId: number, commandId: number) {
+    const vehicle = await this.getVehicle(vehicleId);
+    const command = await this.commandService.getCommand(interfaceId, commandId);
+    try {
+      return await this.getResultFromAgent(
+        vehicle,
+        SocketEventEnum.STOP_INTERFACE_COMMAND,
+        command.command
+      );
     } catch (err) {
       throw new HttpException(err, HttpStatus.SERVICE_UNAVAILABLE);
     }

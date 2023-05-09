@@ -74,57 +74,6 @@ export class InterfaceService {
     return agentInterface;
   }
 
-  getInterfacesWithAllRelationsByNames(names: string[]): Promise<Interface[]> {
-    return this.dataSource
-      .getRepository(Interface)
-      .createQueryBuilder(Alias.INTERFACE)
-      .leftJoinAndSelect(
-        `${Alias.INTERFACE}.${Alias.MACHINES}`,
-        Alias.MACHINES,
-        `${Alias.MACHINES}.isDeleted = false`
-      )
-      .leftJoinAndSelect(
-        `${Alias.INTERFACE}.${Alias.SENSORS}`,
-        Alias.SENSORS,
-        `${Alias.SENSORS}.isDeleted = false`
-      )
-      .leftJoinAndSelect(
-        `${Alias.INTERFACE}.${Alias.ALGORITHMS}`,
-        Alias.ALGORITHMS,
-        `${Alias.ALGORITHMS}.isDeleted = false`
-      )
-      .leftJoinAndSelect(
-        `${Alias.INTERFACE}.${Alias.COMMANDS}`,
-        Alias.COMMANDS,
-        `${Alias.COMMANDS}.isDeleted = false`
-      )
-      .leftJoinAndSelect(
-        `${Alias.INTERFACE}.${Alias.MULTI_DESTINATIONS}`,
-        Alias.MULTI_DESTINATIONS,
-        `${Alias.MULTI_DESTINATIONS}.isDeleted = false`
-      )
-      .leftJoinAndSelect(
-        `${Alias.INTERFACE}.${Alias.INTERFACE_DESTINATIONS}`,
-        Alias.INTERFACE_DESTINATIONS,
-        `${Alias.INTERFACE_DESTINATIONS}.isDeleted = false`
-      )
-      .leftJoinAndSelect(
-        `${Alias.INTERFACE_DESTINATIONS}.${Alias.DESTINATION}`,
-        Alias.DESTINATION,
-        `${Alias.DESTINATION}.isDeleted = false`
-      )
-      .leftJoinAndSelect(
-        `${Alias.MULTI_DESTINATIONS}.${Alias.DESTINATIONS}`,
-        Alias.DESTINATIONS,
-        `${Alias.DESTINATIONS}.isDeleted = false`
-      )
-      .where({
-        name: In(names),
-        isDeleted: false
-      })
-      .getMany();
-  }
-
   getInterfaceByNames(names: string[]): Promise<Interface[]> {
     return this.dataSource.getRepository(Interface).find({
       where: {
@@ -139,6 +88,18 @@ export class InterfaceService {
         name
       }
     });
+  }
+
+  async getInterfaceById(id: number): Promise<Interface> {
+    const agentInterface = await this.dataSource.getRepository(Interface).findOne({
+      where: {
+        id
+      }
+    });
+    if (!agentInterface) {
+      throw new HttpException(message.interfaceNotFound, HttpStatus.NOT_FOUND);
+    }
+    return agentInterface;
   }
 
   async createInterface(interfaceDTO: InterfaceDTO): Promise<Interface> {

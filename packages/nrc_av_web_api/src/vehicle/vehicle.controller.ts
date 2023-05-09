@@ -22,14 +22,6 @@ import { UserGuard, HttpBodyValidatorPipe, EventEmitterNameSpace } from '../core
 import { TimeoutInterceptor } from '../core/interceptors';
 import { ROSNodesCreationDTO, vROSNodesCreationDTO } from '../rosNode/dto/rosNodesCreation.dto';
 import { ROSNodeService } from '../rosNode/rosNode.service';
-import {
-  InterfaceFilesForRunningDTO,
-  vInterfaceFilesForRunningDTO
-} from './dto/interfaceFilesForRunning.dto';
-import {
-  InterfaceFilesForStoppingDTO,
-  vInterfaceFilesForStoppingDTO
-} from './dto/interfaceFilesForStopping.dto';
 import { ROSNodesForRunningDTO, vROSNodesForRunningDTO } from './dto/rosNodeForRunning.dto';
 import { VehicleService } from './vehicle.service';
 
@@ -115,24 +107,50 @@ export class VehicleController {
     return res.status(HttpStatus.OK).send(result);
   }
 
-  @Post('/:id/execution/interface-files')
-  @UsePipes(new HttpBodyValidatorPipe(vInterfaceFilesForRunningDTO))
+  @Post('/:id/execution/interface-files/:interfaceId')
   async startInterfaceFiles(
     @Param('id', ParseIntPipe) id: number,
-    @Res() res: Response,
-    @Body() body: InterfaceFilesForRunningDTO
+    @Param('interfaceId', ParseIntPipe) interfaceId: number,
+    @Res() res: Response
   ) {
-    return res.status(HttpStatus.OK).send(await this.vehicleService.startInterfaceFiles(id, body));
+    return res
+      .status(HttpStatus.OK)
+      .send(await this.vehicleService.startInterfaceFiles(id, interfaceId));
   }
 
-  @Post('/:id/termination/interface-files')
-  @UsePipes(new HttpBodyValidatorPipe(vInterfaceFilesForStoppingDTO))
+  @Post('/:id/termination/interface-files/:interfaceId')
   async stopInterfaceFiles(
     @Param('id', ParseIntPipe) id: number,
-    @Res() res: Response,
-    @Body() body: InterfaceFilesForStoppingDTO
+    @Param('interfaceId', ParseIntPipe) interfaceId: number,
+    @Res() res: Response
   ) {
-    return res.status(HttpStatus.OK).send(await this.vehicleService.stopInterfaceFiles(id, body));
+    return res
+      .status(HttpStatus.OK)
+      .send(await this.vehicleService.stopInterfaceFiles(id, interfaceId));
+  }
+
+  @Post('/:id/interface/:interfaceId/execution/command/:commandId')
+  async runInterfaceCommand(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('interfaceId', ParseIntPipe) interfaceId: number,
+    @Param('commandId', ParseIntPipe) commandId: number,
+    @Res() res: Response
+  ) {
+    return res
+      .status(HttpStatus.OK)
+      .send(await this.vehicleService.runInterfaceCommand(id, interfaceId, commandId));
+  }
+
+  @Post('/:id/interface/:interfaceId/termination/command/:commandId')
+  async stopInterfaceCommand(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('interfaceId', ParseIntPipe) interfaceId: number,
+    @Param('commandId', ParseIntPipe) commandId: number,
+    @Res() res: Response
+  ) {
+    return res
+      .status(HttpStatus.OK)
+      .send(await this.vehicleService.stopInterfaceCommand(id, interfaceId, commandId));
   }
 
   @Sse('/:id/interface/:interface/details-status')

@@ -1,9 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { Command } from '../core';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { DataSource } from 'typeorm';
+import { Command, message } from '../core';
 import { CommandDTO } from '../interface/dto/command.dto';
 
 @Injectable()
 export class CommandService {
+  constructor(private readonly dataSource: DataSource) {}
+
   updateCommands(currentCmds: Command[], newCmds: CommandDTO[]): Command[] {
     const updatedCmds: Command[] = [];
     newCmds.forEach((newCmd) => {
@@ -34,5 +37,22 @@ export class CommandService {
       currentCmd.isDeleted = true;
     });
     return updatedCmds.concat(currentCmds);
+  }
+
+  async getCommand(interfaceId: number, commandId: number): Promise<Command> {
+    const command = await this.dataSource.getRepository(Command).findOne({
+      where: {
+        interface: {
+          id: interfaceId,
+          isDeleted: false
+        },
+        id: commandId,
+        isDeleted: false
+      }
+    });
+    if (!command) {
+      throw new HttpException(message.commandNotFound, HttpStatus.NOT_FOUND);
+    }
+    return command;
   }
 }

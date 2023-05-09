@@ -42,5 +42,6 @@ export const message = Object.freeze({
   fileNameRequired: 'File name is required',
   machineNotFound: 'Machine not found',
   interfaceNotFound: 'Interface not found',
-  interfaceExisted: 'Interface already exists'
+  interfaceExisted: 'Interface already exists',
+  commandNotFound: 'Command not found'
 });

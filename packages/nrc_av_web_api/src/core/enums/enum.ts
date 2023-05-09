@@ -32,7 +32,9 @@ export enum SocketEventEnum {
 
   RUN_INTERFACE = 'nissan/interface/run',
   GET_INTERFACE_STATUS = 'nissan/interface/status',
-  STOP_INTERFACE = 'nissan/interface/stop'
+  STOP_INTERFACE = 'nissan/interface/stop',
+  RUN_INTERFACE_COMMAND = 'nissan/interface/exec/command',
+  STOP_INTERFACE_COMMAND = 'nissan/interface/stop/command'
 }
 
 export enum EventEmitterNameSpace {
