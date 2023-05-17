@@ -43,5 +43,6 @@ export const message = Object.freeze({
   machineNotFound: 'Machine not found',
   interfaceNotFound: 'Interface not found',
   interfaceExisted: 'Interface already exists',
-  commandNotFound: 'Command not found'
+  commandNotFound: 'Command not found',
+  notHavePermission: 'You do not have permission'
 });

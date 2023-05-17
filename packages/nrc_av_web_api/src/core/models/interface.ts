@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
+import { Column, Entity, ManyToMany, ManyToOne, OneToMany } from 'typeorm';
 import { Algorithm } from './algorithms';
 import { BaseModel } from './base';
 import { Command } from './command';
@@ -7,6 +7,7 @@ import { Machine } from './machine';
 import { Model } from './model';
 import { MultiDestination } from './multiDestination';
 import { Sensor } from './sensor';
+import { User } from './user';
 
 @Entity()
 export class Interface extends BaseModel {
@@ -33,6 +34,9 @@ export class Interface extends BaseModel {
 
   @OneToMany(() => InterfaceDestination, (interfaceDestination) => interfaceDestination.interface)
   interfaceDestinations: InterfaceDestination[];
+
+  @ManyToMany(() => User, (user) => user.interfaces)
+  users: User[];
 
   constructor(name: string) {
     super();

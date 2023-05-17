@@ -39,8 +39,7 @@ export const DbModule = TypeOrmModule.forRootAsync({
       InterfaceDestination,
       MultiDestination,
       Command
-    ],
-    synchronize: true
+    ]
   }),
   inject: [ConfigService]
 });

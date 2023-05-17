@@ -1,13 +1,18 @@
 import joi from 'joi';
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, JoinTable, ManyToMany } from 'typeorm';
 import { BaseModel } from './base';
+import { Interface } from './interface';
 @Entity()
 export class User extends BaseModel {
-  @Column()
+  @Column({ unique: true })
   username: string;
 
   @Column()
   password: string;
+
+  @ManyToMany(() => Interface, (agentInterface) => agentInterface.users)
+  @JoinTable({ name: 'user_interface' })
+  interfaces: Interface[];
 }
 
 export const userValidateSchema = {

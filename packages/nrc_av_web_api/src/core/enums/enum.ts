@@ -51,5 +51,6 @@ export enum Alias {
   MULTI_DESTINATIONS = 'multiDestinations',
   INTERFACE_DESTINATIONS = 'interfaceDestinations',
   DESTINATIONS = 'destinations',
-  DESTINATION = 'destination'
+  DESTINATION = 'destination',
+  USERS = 'users'
 }

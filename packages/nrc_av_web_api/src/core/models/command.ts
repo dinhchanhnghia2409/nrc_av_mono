@@ -13,13 +13,13 @@ export class Command extends BaseModel {
   @Column({ nullable: true })
   nodes: string;
 
-  @Column()
+  @Column({ default: false })
   inclByDef: boolean;
 
-  @Column()
+  @Column({ default: false })
   autoStart: boolean;
 
-  @Column()
+  @Column({ default: false })
   autoRecord: boolean;
 
   @ManyToOne(() => Interface, (agentInterface) => agentInterface.commands)

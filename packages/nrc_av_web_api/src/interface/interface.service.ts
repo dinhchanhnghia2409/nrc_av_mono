@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { DataSource, EntityManager, ILike, In } from 'typeorm';
 import { AlgorithmService } from '../algorithm/algorithm.service';
 import { CommandService } from '../command/command.service';
-import { Algorithm, Alias, Command, Interface, Machine, Sensor, message } from '../core';
+import { Algorithm, Alias, Command, Interface, Machine, Sensor, User, message } from '../core';
 import { InterfaceDestinationService } from '../interfaceDestination/interfaceDestination.service';
 import { MachineService } from '../machine/machine.service';
 import { MultiDestinationService } from '../multiDestination/multiDestination.service';
@@ -66,6 +66,11 @@ export class InterfaceService {
         Alias.DESTINATIONS,
         `${Alias.DESTINATIONS}.isDeleted = false`
       )
+      .leftJoinAndSelect(
+        `${Alias.INTERFACE}.${Alias.USERS}`,
+        Alias.USERS,
+        `${Alias.USERS}.isDeleted = false`
+      )
       .where({ id, isDeleted: false })
       .getOne();
     if (!agentInterface) {
@@ -102,7 +107,7 @@ export class InterfaceService {
     return agentInterface;
   }
 
-  async createInterface(interfaceDTO: InterfaceDTO): Promise<Interface> {
+  async createInterface(interfaceDTO: InterfaceDTO, user: User): Promise<Interface> {
     const {
       name,
       algorithms,
@@ -157,6 +162,8 @@ export class InterfaceService {
         );
         newInterface.multiDestinations = newMultiDests;
       }
+
+      newInterface.users = [user];
       newInterface = await transactionalEntityManager.save(Interface, newInterface);
 
       if (destinations?.length) {
@@ -171,6 +178,7 @@ export class InterfaceService {
         newInterface.interfaceDestinations = newDests;
       }
     });
+    delete newInterface.users;
 
     return newInterface;
   }
@@ -196,8 +204,13 @@ export class InterfaceService {
     return { interfaces, total };
   }
 
-  async updateInterface(id: number, interfaceDTO: InterfaceDTO) {
+  async updateInterface(id: number, interfaceDTO: InterfaceDTO, user: User): Promise<Interface> {
     let agentInterface = await this.getInterfaceWithAllRelations(id);
+
+    if (!agentInterface.users?.find((u) => u.id === user.id)) {
+      throw new HttpException(message.notHavePermission, HttpStatus.FORBIDDEN);
+    }
+
     const {
       name,
       machines,
@@ -256,6 +269,7 @@ export class InterfaceService {
       return false;
     });
 
+    delete agentInterface.users;
     return agentInterface;
   }
 }

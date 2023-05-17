@@ -11,10 +11,11 @@ import {
   UseInterceptors,
   UsePipes,
   Query,
-  Put
+  Put,
+  Req
 } from '@nestjs/common';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { HttpBodyValidatorPipe, HttpQueryValidatorPipe, UserGuard } from '../core';
 import { TimeoutInterceptor } from '../core/interceptors';
 import { InterfaceDTO, vInterfaceDTO } from './dto/interface.dto';
@@ -49,8 +50,10 @@ export class InterfaceController {
 
   @Post('/')
   @UsePipes(new HttpBodyValidatorPipe(vInterfaceDTO))
-  async createInterface(@Res() res: Response, @Body() body: InterfaceDTO) {
-    return res.status(HttpStatus.OK).send(await this.interfaceService.createInterface(body));
+  async createInterface(@Res() res: Response, @Body() body: InterfaceDTO, @Req() req: Request) {
+    return res
+      .status(HttpStatus.OK)
+      .send(await this.interfaceService.createInterface(body, req.user));
   }
 
   @Put('/:id')
@@ -58,8 +61,11 @@ export class InterfaceController {
   async updateInterface(
     @Res() res: Response,
     @Body() body: InterfaceDTO,
-    @Param('id', ParseIntPipe) id: number
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: Request
   ) {
-    return res.status(HttpStatus.OK).send(await this.interfaceService.updateInterface(id, body));
+    return res
+      .status(HttpStatus.OK)
+      .send(await this.interfaceService.updateInterface(id, body, req.user));
   }
 }
