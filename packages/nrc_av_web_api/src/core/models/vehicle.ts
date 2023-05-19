@@ -1,8 +1,7 @@
-import { Column, Entity, ManyToOne, OneToMany, JoinTable } from 'typeorm';
+import { Column, Entity, ManyToOne } from 'typeorm';
 import { VehicleStatus } from '../enums';
 import { BaseModel } from './base';
 import { Model } from './model';
-import { NodeList } from './nodeList';
 
 @Entity()
 export class Vehicle extends BaseModel {
@@ -29,8 +28,4 @@ export class Vehicle extends BaseModel {
 
   @ManyToOne(() => Model, (model) => model.vehicles)
   model: Model;
-
-  @OneToMany(() => NodeList, (nodeList) => nodeList.vehicle)
-  @JoinTable({ name: 'nodeList' })
-  nodeList: NodeList[];
 }

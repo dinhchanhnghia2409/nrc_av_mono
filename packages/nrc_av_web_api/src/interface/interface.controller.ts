@@ -61,11 +61,8 @@ export class InterfaceController {
   async updateInterface(
     @Res() res: Response,
     @Body() body: InterfaceDTO,
-    @Param('id', ParseIntPipe) id: number,
-    @Req() req: Request
+    @Param('id', ParseIntPipe) id: number
   ) {
-    return res
-      .status(HttpStatus.OK)
-      .send(await this.interfaceService.updateInterface(id, body, req.user));
+    return res.status(HttpStatus.OK).send(await this.interfaceService.updateInterface(id, body));
   }
 }

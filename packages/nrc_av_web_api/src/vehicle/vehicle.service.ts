@@ -17,7 +17,6 @@ import {
 } from '../core';
 import { InterfaceService } from '../interface/interface.service';
 import { RegisterAgentDTO } from './dto/registerAgent.dto';
-import { ROSNodesForRunningDTO } from './dto/rosNodeForRunning.dto';
 
 @Injectable()
 export class VehicleService {
@@ -33,7 +32,6 @@ export class VehicleService {
     let vehicle = await this.getVehicle(id, VehicleStatus.WAITING);
     try {
       vehicle.status = VehicleStatus.ACTIVE;
-      vehicle.nodeList = undefined;
       vehicle = await this.dataSource.getRepository(Vehicle).save(vehicle);
       const vehicleStatusEvent: IVehicleStatus = {
         vehicleCertKey: vehicle.certKey,
@@ -100,12 +98,7 @@ export class VehicleService {
 
   async getVehicle(id: number, acceptedStatus = VehicleStatus.ACTIVE): Promise<Vehicle> {
     const vehicle = await this.dataSource.getRepository(Vehicle).findOne({
-      where: { id },
-      relations: {
-        nodeList: {
-          rosNode: true
-        }
-      }
+      where: { id }
     });
     if (!vehicle) {
       throw new HttpException(message.vehicleNotFound, HttpStatus.NOT_FOUND);
@@ -163,27 +156,6 @@ export class VehicleService {
     }
   }
 
-  async sendROSNodesForRunning(vehicleId: number, rosNodesForRunningDTO: ROSNodesForRunningDTO) {
-    const vehicle = await this.getVehicle(vehicleId);
-    const rosNodes = rosNodesForRunningDTO.nodeIds.map((id) => {
-      const node = vehicle.nodeList.find((node) => node.rosNode.id === id);
-      if (!node) {
-        throw new HttpException(message.rosNodeNotFound, HttpStatus.NOT_FOUND);
-      }
-      return node.rosNode;
-    });
-    if (!rosNodes) {
-      throw new HttpException(message.rosNodeNotFound, HttpStatus.NOT_FOUND);
-    }
-    try {
-      return await this.getResultFromAgent(vehicle, SocketEventEnum.RUN_ROS_NODE, {
-        nodeArr: rosNodes.map((node) => ({ name: node.name, packageName: node.packageName }))
-      });
-    } catch (error) {
-      throw new HttpException(error, HttpStatus.SERVICE_UNAVAILABLE);
-    }
-  }
-
   async getResultFromAgent(vehicle: Vehicle, event: string, data: any): Promise<ISuccessResponse> {
     const resultFromAgent = (await this.agentGateway.emitToRoom(
       event,
@@ -195,7 +167,6 @@ export class VehicleService {
       throw resultFromAgent.message;
     } else if (resultFromAgent.status !== 'success') {
       vehicle.isOnline = false;
-      vehicle.nodeList = undefined;
       await this.dataSource.getRepository(Vehicle).save(vehicle);
       throw message.agentIsOffline;
     }
@@ -293,6 +264,20 @@ export class VehicleService {
         vehicle,
         SocketEventEnum.STOP_INTERFACE_COMMAND,
         command.command
+      );
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+  }
+
+  async runAllInterfaceCommands(vehicleId: number, interfaceId: number) {
+    const vehicle = await this.getVehicle(vehicleId);
+    const commands = await this.commandService.getCommandsByInterfaceId(interfaceId);
+    try {
+      return await this.getResultFromAgent(
+        vehicle,
+        SocketEventEnum.RUN_ALL_INTERFACE_COMMANDS,
+        commands.map((command) => command.command)
       );
     } catch (err) {
       throw new HttpException(err, HttpStatus.SERVICE_UNAVAILABLE);

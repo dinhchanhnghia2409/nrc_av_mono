@@ -44,5 +44,6 @@ export const message = Object.freeze({
   interfaceNotFound: 'Interface not found',
   interfaceExisted: 'Interface already exists',
   commandNotFound: 'Command not found',
+  interfaceNoCommand: 'The interface does not have any commands',
   notHavePermission: 'You do not have permission'
 });

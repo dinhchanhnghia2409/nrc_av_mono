@@ -204,12 +204,8 @@ export class InterfaceService {
     return { interfaces, total };
   }
 
-  async updateInterface(id: number, interfaceDTO: InterfaceDTO, user: User): Promise<Interface> {
+  async updateInterface(id: number, interfaceDTO: InterfaceDTO): Promise<Interface> {
     let agentInterface = await this.getInterfaceWithAllRelations(id);
-
-    if (!agentInterface.users?.find((u) => u.id === user.id)) {
-      throw new HttpException(message.notHavePermission, HttpStatus.FORBIDDEN);
-    }
 
     const {
       name,

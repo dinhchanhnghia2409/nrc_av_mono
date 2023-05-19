@@ -80,7 +80,7 @@ SELECT create_tables(ARRAY[
     ),
     (
       'vehicle',
-      "id SERIAL PRIMARY KEY, name VARCHAR NOT NULL, 'createdAt' timestamp NOT NULL DEFAULT now(), 'updatedAt' timestamp NOT NULL DEFAULT now(), 'isDeleted' bool NOT NULL DEFAULT false, 'macAddress' VARCHAR NOT NULL, 'certKey' VARCHAR NOT NULL, 'isOnline' bool NOT NULL DEFAULT false, 'lastConnected' timestamp NOT NULL, status VARCHAR NOT NULL DEFAULT 'WAITING', 'agentVersion' VARCHAR, 'modelId' int4"
+      'id SERIAL PRIMARY KEY, name VARCHAR NOT NULL, "createdAt" timestamp NOT NULL DEFAULT now(), "updatedAt" timestamp NOT NULL DEFAULT now(), "isDeleted" bool NOT NULL DEFAULT false, "macAddress" VARCHAR NOT NULL, "certKey" VARCHAR NOT NULL, "isOnline" bool NOT NULL DEFAULT false, "lastConnected" timestamp NOT NULL, status VARCHAR NOT NULL DEFAULT ''WAITING'', "agentVersion" VARCHAR, "modelId" int4'
     ),
     (
       'destination_list',

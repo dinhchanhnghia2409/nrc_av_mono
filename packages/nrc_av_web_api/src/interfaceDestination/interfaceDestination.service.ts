@@ -35,8 +35,8 @@ export class InterfaceDestinationService {
     newInterfaceDests.forEach((newInterfaceDest) => {
       const currentInterfaceDest = currentInterfaceDests.find(
         (currentInterfaceDest) =>
-          currentInterfaceDest.interface_id === newInterfaceDest.interface_id &&
-          currentInterfaceDest.destination_id === newInterfaceDest.destination_id
+          currentInterfaceDest.interfaceId === newInterfaceDest.interface_id &&
+          currentInterfaceDest.destinationId === newInterfaceDest.destination_id
       );
       if (currentInterfaceDest) {
         currentInterfaceDest.name = newInterfaceDest.name;

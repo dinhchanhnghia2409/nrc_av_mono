@@ -55,4 +55,20 @@ export class CommandService {
     }
     return command;
   }
+
+  async getCommandsByInterfaceId(interfaceId: number): Promise<Command[]> {
+    const commands = await this.dataSource.getRepository(Command).find({
+      where: {
+        interface: {
+          id: interfaceId,
+          isDeleted: false
+        },
+        isDeleted: false
+      }
+    });
+    if (!commands || commands.length === 0) {
+      throw new HttpException(message.interfaceNoCommand, HttpStatus.NOT_FOUND);
+    }
+    return commands;
+  }
 }

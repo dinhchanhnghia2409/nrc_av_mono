@@ -8,8 +8,6 @@ import {
   ParseIntPipe,
   UseGuards,
   Post,
-  UsePipes,
-  Body,
   UseInterceptors,
   Sse
 } from '@nestjs/common';
@@ -18,11 +16,8 @@ import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { Subject, map } from 'rxjs';
 import { InterfaceInformationDTO } from '../agent/dto/interfaceInformation.dto';
-import { UserGuard, HttpBodyValidatorPipe, EventEmitterNameSpace } from '../core';
+import { UserGuard, EventEmitterNameSpace } from '../core';
 import { TimeoutInterceptor } from '../core/interceptors';
-import { ROSNodesCreationDTO, vROSNodesCreationDTO } from '../rosNode/dto/rosNodesCreation.dto';
-import { ROSNodeService } from '../rosNode/rosNode.service';
-import { ROSNodesForRunningDTO, vROSNodesForRunningDTO } from './dto/rosNodeForRunning.dto';
 import { VehicleService } from './vehicle.service';
 
 @ApiTags('vehicle')
@@ -33,7 +28,6 @@ import { VehicleService } from './vehicle.service';
 export class VehicleController {
   constructor(
     private readonly vehicleService: VehicleService,
-    private readonly rosNodeService: ROSNodeService,
     private readonly eventEmitter: EventEmitter2
   ) {}
 
@@ -52,21 +46,6 @@ export class VehicleController {
     return res.status(HttpStatus.OK).send(await this.vehicleService.getVehicle(id));
   }
 
-  @Get(':id/ros-nodes')
-  async getVehicleNodes(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
-    return res.status(HttpStatus.OK).send(await this.rosNodeService.getVehicleROSNodes(id));
-  }
-
-  @Get('/:id/ros-nodes/sync')
-  async syncVehicleNodes(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
-    return res.status(HttpStatus.OK).send(await this.rosNodeService.syncVehicleNodes(id));
-  }
-
-  @Get('/:id/ros-nodes/status')
-  async getVehicleROSNodesStatus(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
-    return res.send(await this.rosNodeService.getROSNodeStatus(id));
-  }
-
   @Get('/:id/interface-files/status')
   async getVehicleInterfaceFilesStatus(
     @Param('id', ParseIntPipe) id: number,
@@ -80,30 +59,9 @@ export class VehicleController {
     return res.status(HttpStatus.OK).send(await this.vehicleService.activateVehicle(id));
   }
 
-  @Post('/:id/ros-nodes')
-  @UsePipes(new HttpBodyValidatorPipe(vROSNodesCreationDTO))
-  async updateVehicleNodes(
-    @Param('id', ParseIntPipe) id: number,
-    @Res() res: Response,
-    @Body() body: ROSNodesCreationDTO
-  ) {
-    return res.status(HttpStatus.OK).send(await this.rosNodeService.updateVehicleNodes(id, body));
-  }
-
   @Post('/:id/execution/ros-core')
   async runROSmaster(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
     const result = await this.vehicleService.sendROSMasterCommand(id);
-    return res.status(HttpStatus.OK).send(result);
-  }
-
-  @Post('/:id/execution/ros-nodes')
-  @UsePipes(new HttpBodyValidatorPipe(vROSNodesForRunningDTO))
-  async runROSnode(
-    @Param('id', ParseIntPipe) id: number,
-    @Res() res: Response,
-    @Body() body: ROSNodesForRunningDTO
-  ) {
-    const result = await this.vehicleService.sendROSNodesForRunning(id, body);
     return res.status(HttpStatus.OK).send(result);
   }
 
@@ -139,6 +97,17 @@ export class VehicleController {
     return res
       .status(HttpStatus.OK)
       .send(await this.vehicleService.runInterfaceCommand(id, interfaceId, commandId));
+  }
+
+  @Post('/:id/interface/:interfaceId/execution-all/command')
+  async runAllInterfaceCommands(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('interfaceId', ParseIntPipe) interfaceId: number,
+    @Res() res: Response
+  ) {
+    return res
+      .status(HttpStatus.OK)
+      .send(await this.vehicleService.runAllInterfaceCommands(id, interfaceId));
   }
 
   @Post('/:id/interface/:interfaceId/termination/command/:commandId')

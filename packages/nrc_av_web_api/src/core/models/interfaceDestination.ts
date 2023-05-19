@@ -6,17 +6,17 @@ import { Interface } from './interface';
 @Entity()
 export class InterfaceDestination extends BaseRelationModel {
   @PrimaryColumn()
-  interface_id: number;
+  interfaceId: number;
 
   @PrimaryColumn()
-  destination_id: number;
+  destinationId: number;
 
   @ManyToOne(() => Interface, (agentInterface) => agentInterface.id)
-  @JoinColumn({ name: 'interface_id' })
+  @JoinColumn({ name: 'interfaceId' })
   public interface: Interface;
 
   @ManyToOne(() => Destination, (destination) => destination.id, { cascade: true })
-  @JoinColumn({ name: 'destination_id' })
+  @JoinColumn({ name: 'destinationId' })
   public destination: Destination;
 
   @Column()
