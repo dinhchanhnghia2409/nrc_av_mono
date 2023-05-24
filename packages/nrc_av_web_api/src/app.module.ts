@@ -27,7 +27,9 @@ import { VehicleModule } from './vehicle/vehicle.module';
     VehicleModule,
     AuthModule,
     UserModule,
-    EventEmitterModule.forRoot(),
+    EventEmitterModule.forRoot({
+      maxListeners: 0
+    }),
     InterfaceModule,
     AlgorithmModule,
     MachineModule,

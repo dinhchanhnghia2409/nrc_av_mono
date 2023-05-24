@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
+import { Listener } from 'eventemitter2';
 import { Response } from 'express';
 import { Subject, map } from 'rxjs';
 import { InterfaceInformationDTO } from '../agent/dto/interfaceInformation.dto';
@@ -125,10 +126,11 @@ export class VehicleController {
   @Sse('/:id/interface/:interface/details-status')
   sseInterfaceDetailsStatus(
     @Param('id', ParseIntPipe) id: number,
-    @Param('interface', ParseIntPipe) paramInterfaceId: number
+    @Param('interface', ParseIntPipe) paramInterfaceId: number,
+    @Res() res: Response
   ) {
     const subject = new Subject();
-    this.eventEmitter.on(
+    const listener: Listener = this.eventEmitter.on(
       EventEmitterNameSpace.VEHICLE_INTERFACE_DETAIL_STATUS,
       (data: InterfaceInformationDTO) => {
         const { algorithms, interfaceId, machines, sensors, vehicleId } = data;
@@ -136,8 +138,14 @@ export class VehicleController {
           return;
         }
         subject.next({ machines, algorithms, sensors });
+      },
+      {
+        objectify: true
       }
-    );
+    ) as Listener;
+    res.once('close', () => {
+      listener.off();
+    });
     return subject.pipe(map((data) => ({ data })));
   }
 }
