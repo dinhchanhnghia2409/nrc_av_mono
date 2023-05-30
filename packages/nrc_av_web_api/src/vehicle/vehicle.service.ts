@@ -166,9 +166,8 @@ export class VehicleService {
     if (resultFromAgent.status === 'error') {
       throw resultFromAgent.message;
     } else if (resultFromAgent.status !== 'success') {
-      vehicle.isOnline = false;
-      await this.dataSource.getRepository(Vehicle).save(vehicle);
-      throw message.agentIsOffline;
+      console.error(`${event} is timed out`);
+      throw message.agentTimeout;
     }
     const vehicleStatusEvent: IVehicleStatus = {
       vehicleCertKey: vehicle.certKey,
