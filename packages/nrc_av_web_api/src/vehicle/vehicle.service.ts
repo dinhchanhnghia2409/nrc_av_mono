@@ -16,6 +16,7 @@ import {
   EventEmitterNameSpace
 } from '../core';
 import { InterfaceService } from '../interface/interface.service';
+import { LoggerService } from '../logger/logger.service';
 import { RegisterAgentDTO } from './dto/registerAgent.dto';
 
 @Injectable()
@@ -25,7 +26,8 @@ export class VehicleService {
     private readonly agentGateway: AgentGateway,
     private eventEmitter: EventEmitter2,
     private readonly interfaceService: InterfaceService,
-    private readonly commandService: CommandService
+    private readonly commandService: CommandService,
+    private readonly loggerService: LoggerService
   ) {}
 
   async activateVehicle(id: number): Promise<Vehicle> {
@@ -166,7 +168,7 @@ export class VehicleService {
     if (resultFromAgent.status === 'error') {
       throw resultFromAgent.message;
     } else if (resultFromAgent.status !== 'success') {
-      console.error(`${event} is timed out`);
+      this.loggerService.error(`${event} is timed out in vehicle ${vehicle.name}`);
       throw message.agentTimeout;
     }
     const vehicleStatusEvent: IVehicleStatus = {
