@@ -5,6 +5,7 @@ import { AuthModule } from '../auth/auth.module';
 import { CommandModule } from '../command/command.module';
 import { InterfaceModule } from '../interface/interface.module';
 import { LoggerModule } from '../logger/logger.module';
+import { ModelModule } from '../model/model.module';
 import { VehicleController } from './vehicle.controller';
 import { VehicleService } from './vehicle.service';
 
@@ -14,7 +15,8 @@ import { VehicleService } from './vehicle.service';
     AuthModule,
     InterfaceModule,
     CommandModule,
-    LoggerModule
+    LoggerModule,
+    ModelModule
   ],
   controllers: [VehicleController],
   providers: [VehicleService],

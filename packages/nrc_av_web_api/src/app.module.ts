@@ -11,6 +11,7 @@ import { InterfaceModule } from './interface/interface.module';
 import { InterfaceDestinationModule } from './interfaceDestination/interfaceDestination.module';
 import { LoggerModule } from './logger/logger.module';
 import { MachineModule } from './machine/machine.module';
+import { ModelModule } from './model/model.module';
 import { MultiDestinationModule } from './multiDestination/multiDestination.module';
 import { SensorModule } from './sensor/sensor.module';
 import { UserModule } from './user/user.module';
@@ -39,7 +40,8 @@ import { VehicleModule } from './vehicle/vehicle.module';
     DestinationModule,
     InterfaceDestinationModule,
     MultiDestinationModule,
-    LoggerModule
+    LoggerModule,
+    ModelModule
   ]
 })
 export class AppModule {}

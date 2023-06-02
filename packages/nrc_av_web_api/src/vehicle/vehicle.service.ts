@@ -6,7 +6,6 @@ import { CommandService } from '../command/command.service';
 import {
   Vehicle,
   VehicleStatus,
-  Model,
   message,
   SocketEnum,
   IResponse,
@@ -17,7 +16,9 @@ import {
 } from '../core';
 import { InterfaceService } from '../interface/interface.service';
 import { LoggerService } from '../logger/logger.service';
-import { RegisterAgentDTO } from './dto/registerAgent.dto';
+import { ModelService } from '../model/model.service';
+import { AgentRegistrationDTO } from './dto/agentRegistration.dto';
+import { AgentUpdationDTO } from './dto/agentUpdation.dto';
 
 @Injectable()
 export class VehicleService {
@@ -27,7 +28,8 @@ export class VehicleService {
     private eventEmitter: EventEmitter2,
     private readonly interfaceService: InterfaceService,
     private readonly commandService: CommandService,
-    private readonly loggerService: LoggerService
+    private readonly loggerService: LoggerService,
+    private readonly modelService: ModelService
   ) {}
 
   async activateVehicle(id: number): Promise<Vehicle> {
@@ -47,7 +49,7 @@ export class VehicleService {
     return vehicle;
   }
 
-  async registerVehicle(registerAgentDTO: RegisterAgentDTO): Promise<Vehicle> {
+  async registerVehicle(registerAgentDTO: AgentRegistrationDTO): Promise<Vehicle> {
     const { macAddress, model: modelName, certKey, name } = registerAgentDTO;
     let vehicle = await this.dataSource.getRepository(Vehicle).findOne({
       where: { certKey }
@@ -58,13 +60,7 @@ export class VehicleService {
       vehicle = await this.dataSource.getRepository(Vehicle).save(vehicle);
       return vehicle;
     }
-    let model = await this.dataSource.getRepository(Model).findOne({
-      where: { name: modelName }
-    });
-
-    if (!model) {
-      model = await this.dataSource.getRepository(Model).save(new Model(modelName));
-    }
+    const model = await this.modelService.getAndCreateModelIfNotExisted(modelName);
 
     vehicle = new Vehicle();
     vehicle.certKey = certKey;
@@ -76,6 +72,24 @@ export class VehicleService {
 
     vehicle = await this.dataSource.getRepository(Vehicle).save(vehicle);
     return vehicle;
+  }
+
+  async updateVehicle(agentUpdationDTO: AgentUpdationDTO, certKey: string): Promise<Vehicle> {
+    const { name, model: modelName } = agentUpdationDTO;
+    const vehicle = await this.getVehicleOnCertKey(certKey);
+
+    const model = await this.modelService.getAndCreateModelIfNotExisted(modelName);
+
+    if (vehicle.model.id !== model.id) {
+      vehicle.model = model;
+    }
+    if (vehicle.name !== name) {
+      vehicle.name = name;
+    }
+
+    vehicle.isOnline = true;
+    vehicle.lastConnected = new Date();
+    return await this.dataSource.getRepository(Vehicle).save(vehicle);
   }
 
   async getWaitingOnlineVehicles(): Promise<Vehicle[]> {
@@ -113,7 +127,10 @@ export class VehicleService {
 
   async getVehicleOnCertKey(certKey: string): Promise<Vehicle> {
     const vehicle = await this.dataSource.getRepository(Vehicle).findOne({
-      where: { certKey }
+      where: { certKey },
+      relations: {
+        model: true
+      }
     });
     if (!vehicle) {
       throw new HttpException(message.vehicleNotFound, HttpStatus.NOT_FOUND);
@@ -137,6 +154,9 @@ export class VehicleService {
     const vehicle = await this.dataSource.getRepository(Vehicle).findOne({
       where: {
         certKey
+      },
+      relations: {
+        model: true
       }
     });
     if (vehicle) {

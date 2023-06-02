@@ -9,16 +9,21 @@ import {
   WsException
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { DataSource } from 'typeorm';
 import { REQUEST_TIMEOUT } from '../constants';
 import {
   EventEmitterNameSpace,
   IResponse,
   IVehicleStatus,
   SocketEnum,
-  SocketEventEnum
+  SocketEventEnum,
+  Vehicle
 } from '../core';
 import { InterfaceService } from '../interface/interface.service';
-import { RegisterAgentDTO } from '../vehicle/dto/registerAgent.dto';
+import { LoggerService } from '../logger/logger.service';
+import { ModelService } from '../model/model.service';
+import { AgentRegistrationDTO } from '../vehicle/dto/agentRegistration.dto';
+import { AgentUpdationDTO } from '../vehicle/dto/agentUpdation.dto';
 import { VehicleService } from '../vehicle/vehicle.service';
 import { VehicleStatus } from './../core/enums/enum';
 import { InterfaceDetailStatusDTO } from './dto/interfaceDetailStatus.dto';
@@ -32,7 +37,10 @@ export class AgentGateway {
     @Inject(forwardRef(() => VehicleService))
     private readonly vehicleService: VehicleService,
     private readonly eventEmitter: EventEmitter2,
-    private readonly interfaceService: InterfaceService
+    private readonly interfaceService: InterfaceService,
+    private readonly dataSource: DataSource,
+    private readonly modelService: ModelService,
+    private readonly loggerService: LoggerService
   ) {}
   @WebSocketServer()
   server: Server;
@@ -68,13 +76,31 @@ export class AgentGateway {
   }
 
   async handleConnection(client: Socket) {
-    // eslint-disable-next-line no-console
-    console.log('connected', client.id);
+    this.loggerService.log(`connected ${client.id}`);
 
     const clientKey = client.handshake.headers.certkey as string;
+    const vehicleName = client.handshake.headers.name as string;
+    const modelName = client.handshake.headers.model as string;
     const vehicle = await this.vehicleService.handleVehicleConnection(clientKey);
     if (vehicle) {
-      client.join(`${SocketEnum.ROOM_PREFIX}${clientKey}`);
+      await client.join(`${SocketEnum.ROOM_PREFIX}${clientKey}`);
+
+      let isUpdated = false;
+      const model = await this.modelService.getAndCreateModelIfNotExisted(modelName);
+
+      if (model.id !== vehicle.model.id) {
+        vehicle.model = model;
+        isUpdated = true;
+      }
+
+      if (vehicleName !== vehicle.name) {
+        vehicle.name = vehicleName;
+        isUpdated = true;
+      }
+
+      if (isUpdated) {
+        await this.dataSource.getRepository(Vehicle).save(vehicle);
+      }
 
       this.emitToRoom(
         SocketEventEnum.VEHICLE_STATUS,
@@ -99,8 +125,7 @@ export class AgentGateway {
   }
 
   async handleDisconnect(client: Socket) {
-    // eslint-disable-next-line no-console
-    console.log('disconnected', client.id);
+    this.loggerService.warn(`disconnected ${client.id}`);
 
     await this.vehicleService.handleVehicleDisconnection(
       client.handshake.headers.certkey as string
@@ -128,8 +153,11 @@ export class AgentGateway {
     })
   )
   @SubscribeMessage(SocketEventEnum.VEHICLE_REGISTRATION)
-  async onEvent(@ConnectedSocket() client: Socket, @MessageBody() data: RegisterAgentDTO) {
-    client.join(`${SocketEnum.ROOM_PREFIX}${data?.certKey}`);
+  async onVehicleRegistration(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: AgentRegistrationDTO
+  ) {
+    await client.join(`${SocketEnum.ROOM_PREFIX}${data?.certKey}`);
 
     const vehicle = await this.vehicleService.registerVehicle(data);
     try {
@@ -190,5 +218,24 @@ export class AgentGateway {
       EventEmitterNameSpace.VEHICLE_INTERFACE_DETAIL_STATUS,
       new InterfaceInformationDTO(vehicle.id, agentInterface.id, machines, algorithms, sensors)
     );
+  }
+
+  @UsePipes(
+    new ValidationPipe({
+      enableDebugMessages: true,
+      transform: true,
+      exceptionFactory(errors) {
+        throw new WsException(errors);
+      }
+    })
+  )
+  @SubscribeMessage(SocketEventEnum.VEHICLE_UPDATION)
+  async onVehicleUpdation(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: AgentUpdationDTO
+  ) {
+    const certKey = client.handshake.headers.certkey as string;
+    const vehicle = await this.vehicleService.updateVehicle(data, certKey);
+    return { certKey: vehicle.certKey };
   }
 }

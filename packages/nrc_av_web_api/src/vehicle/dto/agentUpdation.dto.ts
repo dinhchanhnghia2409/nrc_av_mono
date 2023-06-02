@@ -1,15 +1,9 @@
 import { IsString } from 'class-validator';
 
-export class RegisterAgentDTO {
+export class AgentUpdationDTO {
   @IsString()
   name: string;
 
   @IsString()
   model: string;
-
-  @IsString()
-  macAddress: string;
-
-  @IsString()
-  certKey: string;
 }

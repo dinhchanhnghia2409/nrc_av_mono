@@ -21,6 +21,7 @@ export enum SortOrder {
 export enum SocketEventEnum {
   REGISTRATION_REQUEST = 'nissan/vehicle/registration-request',
   VEHICLE_REGISTRATION = 'nissan/vehicle/registration',
+  VEHICLE_UPDATION = 'nissan/vehicle/updation',
   REGISTRATION_RESPONSE = 'nissan/vehicle/registration-response',
   VEHICLE_STATUS = 'nissan/vehicle/status',
   GET_INTERFACE_DETAIL_STATUS = 'nissan/vehicle/interface/detail/status',
