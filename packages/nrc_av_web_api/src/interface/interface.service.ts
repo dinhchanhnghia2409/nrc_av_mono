@@ -26,56 +26,29 @@ export class InterfaceService {
     const agentInterface = await this.dataSource
       .getRepository(Interface)
       .createQueryBuilder(Alias.INTERFACE)
-      .leftJoinAndSelect(
-        `${Alias.INTERFACE}.${Alias.MACHINES}`,
-        Alias.MACHINES,
-        `${Alias.MACHINES}.isDeleted = false`
-      )
-      .leftJoinAndSelect(
-        `${Alias.INTERFACE}.${Alias.SENSORS}`,
-        Alias.SENSORS,
-        `${Alias.SENSORS}.isDeleted = false`
-      )
-      .leftJoinAndSelect(
-        `${Alias.INTERFACE}.${Alias.ALGORITHMS}`,
-        Alias.ALGORITHMS,
-        `${Alias.ALGORITHMS}.isDeleted = false`
-      )
-      .leftJoinAndSelect(
-        `${Alias.INTERFACE}.${Alias.COMMANDS}`,
-        Alias.COMMANDS,
-        `${Alias.COMMANDS}.isDeleted = false`
-      )
-      .leftJoinAndSelect(
-        `${Alias.INTERFACE}.${Alias.MULTI_DESTINATIONS}`,
-        Alias.MULTI_DESTINATIONS,
-        `${Alias.MULTI_DESTINATIONS}.isDeleted = false`
-      )
-      .leftJoinAndSelect(
-        `${Alias.INTERFACE}.${Alias.INTERFACE_DESTINATIONS}`,
-        Alias.INTERFACE_DESTINATIONS,
-        `${Alias.INTERFACE_DESTINATIONS}.isDeleted = false`
-      )
-      .leftJoinAndSelect(
-        `${Alias.INTERFACE_DESTINATIONS}.${Alias.DESTINATION}`,
-        Alias.DESTINATION,
-        `${Alias.DESTINATION}.isDeleted = false`
-      )
-      .leftJoinAndSelect(
-        `${Alias.MULTI_DESTINATIONS}.${Alias.DESTINATIONS}`,
-        Alias.DESTINATIONS,
-        `${Alias.DESTINATIONS}.isDeleted = false`
-      )
-      .leftJoinAndSelect(
-        `${Alias.INTERFACE}.${Alias.USERS}`,
-        Alias.USERS,
-        `${Alias.USERS}.isDeleted = false`
-      )
       .where({ id, isDeleted: false })
       .getOne();
+
     if (!agentInterface) {
       throw new HttpException(message.interfaceNotFound, HttpStatus.NOT_FOUND);
     }
+
+    [
+      agentInterface.commands,
+      agentInterface.sensors,
+      agentInterface.machines,
+      agentInterface.algorithms,
+      agentInterface.multiDestinations,
+      agentInterface.interfaceDestinations
+    ] = await Promise.all([
+      this.commandService.getCommands(id),
+      this.sensorService.getSensors(id),
+      this.machineService.getMachines(id),
+      this.algorithmService.getAlgs(id),
+      this.multiDestinationService.getMultiDests(id),
+      this.interfaceDestinationService.getInterfaceDests(id)
+    ]);
+
     return agentInterface;
   }
 

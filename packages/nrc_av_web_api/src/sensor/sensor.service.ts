@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common';
+import { DataSource } from 'typeorm';
 import { Sensor } from '../core';
 import { SensorDTO } from '../interface/dto/sensor.dto';
 
 @Injectable()
 export class SensorService {
+  constructor(private readonly dataSource: DataSource) {}
+
   updateSensors(currentSensors: Sensor[], newSensors: SensorDTO[]): Sensor[] {
     const updatedSensors: Sensor[] = [];
     newSensors.forEach((newSensor) => {
@@ -34,5 +37,16 @@ export class SensorService {
       currentSensor.isDeleted = true;
     });
     return updatedSensors.concat(currentSensors);
+  }
+
+  getSensors(interfaceId: number): Promise<Sensor[]> {
+    return this.dataSource.getRepository(Sensor).find({
+      where: {
+        interface: {
+          id: interfaceId
+        },
+        isDeleted: false
+      }
+    });
   }
 }

@@ -7,10 +7,10 @@ export class Algorithm extends BaseModel {
   @Column()
   name: string;
 
-  @Column()
+  @Column({ type: 'float' })
   errRate: number;
 
-  @Column()
+  @Column({ type: 'float' })
   warnRate: number;
 
   @Column()

@@ -71,4 +71,15 @@ export class CommandService {
     }
     return commands;
   }
+
+  getCommands(interfaceId: number): Promise<Command[]> {
+    return this.dataSource.getRepository(Command).find({
+      where: {
+        interface: {
+          id: interfaceId
+        },
+        isDeleted: false
+      }
+    });
+  }
 }

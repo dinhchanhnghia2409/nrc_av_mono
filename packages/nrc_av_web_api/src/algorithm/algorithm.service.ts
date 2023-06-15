@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common';
+import { DataSource } from 'typeorm';
 import { Algorithm } from '../core';
 import { AlgorithmDTO } from '../interface/dto/algorithm.dto';
 
 @Injectable()
 export class AlgorithmService {
+  constructor(private readonly dataSource: DataSource) {}
+
   updateAlgorithms(currentAlgs: Algorithm[], newAlgs: AlgorithmDTO[]): Algorithm[] {
     const updatedAlgs: Algorithm[] = [];
     newAlgs.forEach((newAlg) => {
@@ -32,5 +35,16 @@ export class AlgorithmService {
       currentAlg.isDeleted = true;
     });
     return updatedAlgs.concat(currentAlgs);
+  }
+
+  getAlgs(interfaceId: number): Promise<Algorithm[]> {
+    return this.dataSource.getRepository(Algorithm).find({
+      where: {
+        interface: {
+          id: interfaceId
+        },
+        isDeleted: false
+      }
+    });
   }
 }

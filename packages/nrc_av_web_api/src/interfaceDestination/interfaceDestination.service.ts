@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { EntityManager } from 'typeorm';
-import { Destination, Interface, InterfaceDestination } from '../core';
+import { DataSource, EntityManager } from 'typeorm';
+import { Alias, Destination, Interface, InterfaceDestination } from '../core';
 import { InterfaceDestDTO } from '../interface/dto/interfaceDestination.dto';
 
 @Injectable()
 export class InterfaceDestinationService {
+  constructor(private readonly dataSource: DataSource) {}
   async addInterfaceDests(
     transactionalEntityManager: EntityManager,
     interfaceDestDTOs: InterfaceDestDTO[],
@@ -64,5 +65,23 @@ export class InterfaceDestinationService {
         updatedInterfaceDests.concat(currentInterfaceDests)
       )
     ).concat(await transactionalEntityManager.save(InterfaceDestination, insertedInterfaceDests));
+  }
+
+  getInterfaceDests(interfaceId: number): Promise<InterfaceDestination[]> {
+    return this.dataSource
+      .getRepository(InterfaceDestination)
+      .createQueryBuilder(Alias.INTERFACE_DESTINATIONS)
+      .where({
+        interface: {
+          id: interfaceId
+        },
+        isDeleted: false
+      })
+      .leftJoinAndSelect(
+        `${Alias.INTERFACE_DESTINATIONS}.${Alias.DESTINATION}`,
+        Alias.DESTINATION,
+        `${Alias.DESTINATION}.isDeleted = false`
+      )
+      .getMany();
   }
 }

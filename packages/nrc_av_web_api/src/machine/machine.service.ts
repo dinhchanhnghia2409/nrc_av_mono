@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common';
+import { DataSource } from 'typeorm';
 import { Machine } from '../core';
 import { MachineDTO } from '../interface/dto/machine.dto';
 
 @Injectable()
 export class MachineService {
+  constructor(private readonly dataSource: DataSource) {}
+
   updateMachines(currentMachines: Machine[], newMachines: MachineDTO[]): Machine[] {
     const updatedMachines: Machine[] = [];
     newMachines.forEach((newMachine) => {
@@ -23,5 +26,16 @@ export class MachineService {
       currentMachine.isDeleted = true;
     });
     return updatedMachines.concat(currentMachines);
+  }
+
+  getMachines(interfaceId: number): Promise<Machine[]> {
+    return this.dataSource.getRepository(Machine).find({
+      where: {
+        interface: {
+          id: interfaceId
+        },
+        isDeleted: false
+      }
+    });
   }
 }
