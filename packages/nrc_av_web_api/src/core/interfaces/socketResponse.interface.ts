@@ -1,6 +1,6 @@
 export interface IErrorResponse {
   status: 'error';
-  message: string;
+  message?: any;
 }
 
 export interface ISuccessResponse {

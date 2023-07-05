@@ -186,7 +186,7 @@ export class VehicleService {
     )) as IResponse;
 
     if (resultFromAgent.status === 'error') {
-      throw resultFromAgent.message;
+      throw resultFromAgent;
     } else if (resultFromAgent.status !== 'success') {
       this.loggerService.error(`${event} is timed out in vehicle ${vehicle.name}`);
       throw message.agentTimeout;
@@ -298,7 +298,7 @@ export class VehicleService {
       return await this.getResultFromAgent(
         vehicle,
         SocketEventEnum.RUN_ALL_INTERFACE_COMMANDS,
-        commands.map((command) => command.command)
+        commands.map((command) => ({ id: command.id, command: command.command }))
       );
     } catch (err) {
       throw new HttpException(err, HttpStatus.SERVICE_UNAVAILABLE);
