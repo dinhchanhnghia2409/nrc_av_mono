@@ -199,15 +199,25 @@ export class VehicleService {
     return resultFromAgent;
   }
 
-  async startInterfaceFiles(vehicleId: number, interfaceId: number) {
+  async startInterfaceFiles(vehicleId: number, interfaceId: number, mapName: string) {
     const vehicle = await this.getVehicle(vehicleId);
     const agentInterface = await this.interfaceService.getInterfaceWithAllRelations(interfaceId);
     if (!agentInterface) {
       throw new HttpException(message.interfaceNotFound, HttpStatus.NOT_FOUND);
     }
-
+    const data = { mapName, agentInterface };
     try {
-      return await this.getResultFromAgent(vehicle, SocketEventEnum.RUN_INTERFACE, agentInterface);
+      return await this.getResultFromAgent(vehicle, SocketEventEnum.RUN_INTERFACE, data);
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+  }
+
+  async changeMap(vehicleId: number, mapName: string) {
+    const vehicle = await this.getVehicle(vehicleId);
+    const data = { mapName };
+    try {
+      return await this.getResultFromAgent(vehicle, SocketEventEnum.CHANGE_MAP, data);
     } catch (err) {
       throw new HttpException(err, HttpStatus.SERVICE_UNAVAILABLE);
     }

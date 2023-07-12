@@ -36,7 +36,8 @@ export enum SocketEventEnum {
   STOP_INTERFACE = 'nissan/interface/stop',
   RUN_INTERFACE_COMMAND = 'nissan/interface/exec/command',
   STOP_INTERFACE_COMMAND = 'nissan/interface/stop/command',
-  RUN_ALL_INTERFACE_COMMANDS = 'nissan/interface/exec-all/command'
+  RUN_ALL_INTERFACE_COMMANDS = 'nissan/interface/exec-all/command',
+  CHANGE_MAP = 'nissan/interface/changemap'
 }
 
 export enum EventEmitterNameSpace {

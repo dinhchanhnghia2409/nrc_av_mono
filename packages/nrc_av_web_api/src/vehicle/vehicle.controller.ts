@@ -66,15 +66,25 @@ export class VehicleController {
     return res.status(HttpStatus.OK).send(result);
   }
 
-  @Post('/:id/execution/interface-files/:interfaceId')
+  @Post('/:id/execution/interface-files/:interfaceId/:mapName')
   async startInterfaceFiles(
     @Param('id', ParseIntPipe) id: number,
     @Param('interfaceId', ParseIntPipe) interfaceId: number,
+    @Param('mapName') mapName: string,
     @Res() res: Response
   ) {
     return res
       .status(HttpStatus.OK)
-      .send(await this.vehicleService.startInterfaceFiles(id, interfaceId));
+      .send(await this.vehicleService.startInterfaceFiles(id, interfaceId, mapName));
+  }
+
+  @Post(':id/change-map/interface-files/:mapName')
+  async changeMap(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('mapName') mapName: string,
+    @Res() res: Response
+  ) {
+    return res.status(HttpStatus.OK).send(await this.vehicleService.changeMap(id, mapName));
   }
 
   @Post('/:id/termination/interface-files/:interfaceId')
