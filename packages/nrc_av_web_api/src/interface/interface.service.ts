@@ -2,7 +2,17 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { DataSource, EntityManager, ILike, In } from 'typeorm';
 import { AlgorithmService } from '../algorithm/algorithm.service';
 import { CommandService } from '../command/command.service';
-import { Algorithm, Alias, Command, Interface, Machine, Sensor, User, message } from '../core';
+import {
+  Algorithm,
+  Alias,
+  Command,
+  Interface,
+  InterfaceDestination,
+  Machine,
+  Sensor,
+  User,
+  message
+} from '../core';
 import { InterfaceDestinationService } from '../interfaceDestination/interfaceDestination.service';
 import { MachineService } from '../machine/machine.service';
 import { MultiDestinationService } from '../multiDestination/multiDestination.service';
@@ -146,7 +156,13 @@ export class InterfaceService {
             destinations,
             newInterface
           )
-        ).map((interfaceDest) => ({ ...interfaceDest, interface: null }));
+        ).map(
+          (interfaceDest) =>
+            ({
+              name: interfaceDest.name,
+              destination: interfaceDest.destination
+            } as InterfaceDestination)
+        );
 
         newInterface.interfaceDestinations = newDests;
       }
@@ -221,7 +237,13 @@ export class InterfaceService {
         )
       )
         .filter((interfaceDest) => !interfaceDest.isDeleted)
-        .map((interfaceDest) => ({ ...interfaceDest, interface: null }));
+        .map(
+          (interfaceDest) =>
+            ({
+              name: interfaceDest.name,
+              destination: interfaceDest.destination
+            } as InterfaceDestination)
+        );
     });
 
     agentInterface.machines = agentInterface.machines.filter((machine) => !machine.isDeleted);
