@@ -12,7 +12,8 @@ import {
   UsePipes,
   Query,
   Put,
-  Req
+  Req,
+  Delete
 } from '@nestjs/common';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import { Response, Request } from 'express';
@@ -66,6 +67,17 @@ export class InterfaceController {
       res,
       await this.interfaceService.createInterface(body, req.user),
       HttpStatus.CREATED
+    );
+  }
+
+  @Delete('/:id')
+  @UsePipes(new HttpBodyValidatorPipe(vInterfaceDTO))
+  @Serialize(Interface)
+  async deleteInterface(@Res() res: Response, @Param('id', ParseIntPipe) id: number) {
+    return new ControllerResponse(
+      res,
+      await this.interfaceService.deleteInterface(id),
+      HttpStatus.OK
     );
   }
 

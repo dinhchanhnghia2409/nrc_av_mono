@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { DataSource, EntityManager, ILike, In } from 'typeorm';
 import { AlgorithmService } from '../algorithm/algorithm.service';
 import { CommandService } from '../command/command.service';
@@ -176,7 +176,8 @@ export class InterfaceService {
     const { name, order, currentPage, orderBy, pageSize } = interfaceFilteringDTO;
     const interfaces = await this.dataSource.getRepository(Interface).find({
       where: {
-        name: ILike(`%${name}%`)
+        name: ILike(`%${name}%`),
+        isDeleted: false
       },
       order: {
         [orderBy]: order
@@ -187,10 +188,25 @@ export class InterfaceService {
     });
     const total = await this.dataSource.getRepository(Interface).count({
       where: {
-        name: ILike(`%${name}%`)
+        name: ILike(`%${name}%`),
+        isDeleted: false
       }
     });
     return { interfaces, total };
+  }
+
+  async deleteInterface(id: number): Promise<boolean> {
+    const agentInterface = await this.getInterfaceWithAllRelations(id);
+
+    if (!agentInterface) {
+      throw new NotFoundException('Interface not found.');
+    }
+
+    agentInterface.isDeleted = true;
+
+    await this.dataSource.manager.save(agentInterface);
+
+    return true;
   }
 
   async updateInterface(id: number, interfaceDTO: InterfaceDTO): Promise<Interface> {
